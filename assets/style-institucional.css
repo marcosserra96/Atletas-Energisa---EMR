@@ -17,32 +17,35 @@ body {
 /* ===== CABEÇALHO INSTITUCIONAL ===== */
 .header-energisa {
   background: linear-gradient(90deg, #009BC1, #00A69C);
-  padding: 16px 0;
+  padding: 12px 0;
   color: #fff;
+}
+
+/* Remove a limitação de largura padrão do Bootstrap */
+.header-energisa .container {
+  max-width: 100%;
+  padding: 0 40px; /* espaçamento horizontal fixo, consistente */
 }
 
 .header-layout {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: nowrap;
+  width: 100%;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex: 1;
-  min-width: 0;
+  gap: 10px;
 }
 
 .header-right {
   flex-shrink: 0;
-  margin-left: auto;
 }
 
 .logo-energisa {
-  height: 34px;
+  height: 26px; /* reduz o tamanho da logo */
   width: auto;
   flex-shrink: 0;
 }
@@ -56,28 +59,33 @@ body {
 
 .titulo-portal {
   font-weight: 600;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   color: #fff;
+  margin: 0;
 }
 
 .subtitulo-portal {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #e9f7fa;
-  letter-spacing: 0.4px;
-  margin-top: 1px;
+  letter-spacing: 0.3px;
+  margin: 1px 0 0 0;
 }
 
 .btn-outline-light {
-  border: 1.5px solid #fff;
+  border: 1.3px solid #fff;
   color: #fff;
   border-radius: 8px;
   transition: all 0.3s;
+  padding: 3px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .btn-outline-light:hover {
   background: #fff;
   color: #009BC1;
 }
+
 
 /* ===== BANNER INTRODUTÓRIO ===== */
 .banner-intro {
