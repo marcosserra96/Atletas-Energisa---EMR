@@ -20,16 +20,18 @@
   background: #fff;
   padding: 40px 50px;
   border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
   width: 100%;
   max-width: 400px;
   text-align: center;
   position: relative;
   overflow: hidden;
-  min-height: 420px; /* 👈 mantém altura fixa bonita */
+  min-height: 430px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  backdrop-filter: blur(6px);
+  transform-style: preserve-3d;
 }
 
 h1 {
@@ -45,6 +47,12 @@ input, select {
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 0.95rem;
+  transition: border-color 0.3s;
+}
+
+input:focus, select:focus {
+  border-color: #009BC1;
+  outline: none;
 }
 
 button {
@@ -58,10 +66,13 @@ button {
   font-size: 1rem;
   cursor: pointer;
   margin-top: 10px;
-  transition: opacity 0.3s;
+  transition: transform 0.2s ease, opacity 0.3s ease;
 }
 
-button:hover { opacity: 0.9; }
+button:hover { 
+  opacity: 0.95;
+  transform: scale(1.02);
+}
 
 .footer { 
   margin-top: 20px; 
@@ -80,21 +91,26 @@ button:hover { opacity: 0.9; }
 }
 .toggle:hover { color: #00A69C; }
 
-/* 🪄 Transição suave entre formulários */
+/* ✨ Efeito de transição aprimorado */
 .form-container {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   opacity: 0;
-  transform: translateY(40px);
-  transition: all 0.5s ease;
+  transform: scale(0.95) translateY(20px);
+  filter: blur(6px);
+  transition: 
+    opacity 0.5s ease,
+    transform 0.6s ease,
+    filter 0.6s ease;
   pointer-events: none;
 }
 
 .form-container.active {
   opacity: 1;
-  transform: translateY(0);
+  transform: scale(1) translateY(0);
+  filter: blur(0);
   pointer-events: all;
 }
 
