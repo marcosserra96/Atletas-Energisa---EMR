@@ -1,259 +1,123 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
-
-:root {
-  --azul: #009bc1;
-  --verde: #00a69c;
-  --laranja: #f37021;
-  --cinza: #f5f8fa;
-}
-
 body {
-  font-family: "Poppins", sans-serif;
-  background: var(--cinza);
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: #f7f9fa;
   color: #333;
 }
 
-/* ===== CABEÇALHO INSTITUCIONAL ===== */
-.header-energisa {
+/* Topo */
+.topbar {
   background: linear-gradient(90deg, #009BC1, #00A69C);
-  padding: 12px 0;
-  color: #fff;
-}
-
-/* Remove a limitação de largura padrão do Bootstrap */
-.header-energisa .container {
-  max-width: 100%;
-  padding: 0 40px; /* espaçamento horizontal fixo, consistente */
-}
-
-.header-layout {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  width: 100%;
+  align-items: center;
+  padding: 14px 40px;
+  color: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
-
-.header-left {
+.logo-area {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-
-.header-right {
-  flex-shrink: 0;
+.logo {
+  height: 40px;
 }
-
-.logo-energisa {
-  height: 15px; /* reduz o tamanho da logo */
-  width: auto;
-  flex-shrink: 0;
-}
-
-.titulo-area {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  line-height: 1.1;
-}
-
-.titulo-portal {
-  font-weight: 600;
-  font-size: 1.4rem;
-  color: #fff;
+.titles h1 {
+  font-size: 1.2rem;
   margin: 0;
 }
-
-.subtitulo-portal {
-  font-size: 0.85rem;
-  color: #e9f7fa;
-  letter-spacing: 0.3px;
-  margin: 1px 0 0 0;
+.titles p {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+.logout-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
-.btn-outline-light {
-  border: 1.3px solid #fff;
-  color: #fff;
-  border-radius: 8px;
-  transition: all 0.3s;
-  padding: 3px 12px;
+/* Layout principal */
+.container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+  padding: 30px;
+}
+
+.registro, .historico {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 25px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.checkboxes {
+  grid-column: span 2;
+  display: flex;
+  gap: 15px;
   font-size: 0.9rem;
-  font-weight: 600;
 }
 
-.btn-outline-light:hover {
+.btn-registrar {
+  background: linear-gradient(90deg, #009BC1, #00A69C);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  margin-top: 10px;
+  cursor: pointer;
+}
+.btn-registrar:hover { opacity: 0.9; }
+
+.historico table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.historico th, .historico td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+.historico th { background: #f0f4f5; text-align: left; }
+
+/* Lateral */
+.sidebar {
   background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  height: fit-content;
+}
+.sidebar h3 {
+  margin-top: 0;
   color: #009BC1;
 }
-
-
-/* ===== BANNER INTRODUTÓRIO ===== */
-.banner-intro {
-  background: #fff;
-  border-bottom: 1px solid #eaeaea;
-  text-align: center;
-  padding: 2.5rem 0;
-}
-
-.banner-intro h2 {
-  font-weight: 600;
-  color: #222;
-  font-size: 1.8rem;
-}
-
-.texto-destaque {
-  background: var(--azul);
-  color: #fff;
-  padding: 3px 10px;
-  border-radius: 12px;
-}
-
-.banner-intro p {
-  color: #555;
-  font-size: 1rem;
-  margin-top: 0.5rem;
-}
-
-/* ===== CARDS ===== */
-.card-energisa {
-  background: #fff;
-  border: none;
-  border-radius: 20px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-  display: flex;
-  flex-direction: column;
-  min-height: 270px;
-  transition: all 0.3s ease;
-}
-
-.card-energisa:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
-}
-
-.icon-card {
-  width: 54px;
-  height: 54px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  color: #fff;
-  font-size: 1.6rem;
-}
-
-.bg-azul { background: var(--azul); }
-.bg-verde { background: var(--verde); }
-.bg-laranja { background: var(--laranja); }
-
-.btn-energisa {
-  background: var(--azul);
-  color: white;
-  font-weight: 500;
-  border-radius: 10px;
-  border: none;
-  transition: all 0.3s;
-  padding: 8px 12px;
-}
-
-.btn-energisa:hover {
-  background: var(--laranja);
-}
-
-.card-energisa h4 {
-  font-weight: 600;
-  color: #222;
-}
-
-.card-energisa p {
-  color: #666;
-  font-size: 0.95rem;
-}
-
-/* ===== LISTA DE RANKINGS ===== */
-.ranking-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.ranking-list li {
-  background: #f9fafc;
-  border-radius: 8px;
-  padding: 6px 10px;
-  margin-bottom: 5px;
+.treino-card {
+  border-left: 4px solid #00A69C;
+  background: #f7f9fa;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
   font-size: 0.9rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
+.treino-card p { margin: 3px 0; }
 
-/* ===== BOTÃO ADMIN ===== */
-.admin-btn {
-  position: fixed;
-  bottom: 22px;
-  right: 22px;
-  background: var(--azul);
-  border: none;
-  border-radius: 50%;
-  color: white;
-  width: 52px;
-  height: 52px;
-  font-size: 1.4rem;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 1000;
-}
-
-.admin-btn:hover {
-  background: var(--verde);
-  transform: rotate(20deg);
-}
-
-/* ===== RODAPÉ INSTITUCIONAL ===== */
-.footer-energisa {
-  background: #fff;
-  border-top: 1px solid #e5e5e5;
-  padding: 10px 0;
+.rodape {
   text-align: center;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  z-index: 10;
-}
-
-.footer-energisa p {
-  color: #777;
   font-size: 0.8rem;
-  margin: 0;
-}
-
-.logo-footer {
-  height: 28px;
-  opacity: 0.85;
-}
-
-
-/* ===== RESPONSIVIDADE ===== */
-@media (max-width: 768px) {
-  .titulo-portal {
-    font-size: 1.4rem;
-  }
-
-  .banner-intro h2 {
-    font-size: 1.4rem;
-  }
-
-  .btn-energisa {
-    font-size: 0.9rem;
-  }
-
-  .logo-energisa {
-    height: 32px;
-  }
-}
-/* Evita sobreposição do rodapé */
-body {
-  padding-bottom: 50px; /* espaço reservado ao rodapé */
+  padding: 10px;
+  color: #555;
+  border-top: 1px solid #eee;
+  margin-top: 30px;
 }
