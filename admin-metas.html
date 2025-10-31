@@ -22,7 +22,7 @@
   </header>
 
   <main class="container">
-    <!-- Coluna principal -->
+    <!-- Atividades pendentes -->
     <section class="registro">
       <h2>Atividades Pendentes</h2>
       <table id="atividadesPendentes">
@@ -40,9 +40,33 @@
         </thead>
         <tbody></tbody>
       </table>
+
+      <hr style="margin:30px 0;" />
+
+      <!-- Ranking consolidado -->
+      <section class="historico">
+        <h2>🏆 Ranking Consolidado</h2>
+
+        <div class="ranking-tabs">
+          <button class="tab-btn active" data-tipo="bike">🚴 Equipe Bike</button>
+          <button class="tab-btn" data-tipo="corrida">🏃 Equipe Corrida</button>
+        </div>
+
+        <table id="rankingTabela">
+          <thead>
+            <tr>
+              <th>Atleta</th>
+              <th>Total KM</th>
+              <th>Atividades</th>
+              <th>Pontos</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
     </section>
 
-    <!-- Lateral -->
+    <!-- Lateral: eventos e metas -->
     <aside class="sidebar">
       <h3>🎯 Metas e Eventos Extras</h3>
       <div class="form-grid">
