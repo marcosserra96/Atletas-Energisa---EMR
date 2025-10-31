@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar Atividade - Atletas Energisa</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script type="module" src="firebase/firebase-config.js"></script>
+</head>
+
+<body class="bg-light">
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container-fluid justify-content-between">
+      <span class="navbar-brand fw-bold">Atletas Energisa</span>
+      <a href="dashboard.html" class="btn btn-outline-light btn-sm">Voltar</a>
+    </div>
+  </nav>
+
+  <main class="container my-5">
+    <div class="card shadow p-4 mx-auto" style="max-width: 500px;">
+      <h3 class="text-center text-primary fw-bold mb-4">Registrar Atividade</h3>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Tipo de Atividade</label>
+        <select id="tipo" class="form-select">
+          <option value="">Selecione...</option>
+          <option value="treino">🏋️ Treino Presencial</option>
+          <option value="uniforme">👕 Treinou com Uniforme</option>
+          <option value="meta">🎯 Meta Cumprida</option>
+          <option value="evento">🏅 Evento Extra</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Data</label>
+        <input type="date" id="data" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Observações (opcional)</label>
+        <textarea id="obs" class="form-control" rows="2" placeholder="Ex: Treino noturno Cataguases"></textarea>
+      </div>
+
+      <button id="btnSalvar" class="btn btn-primary w-100 mt-3">Salvar Atividade</button>
+    </div>
+  </main>
+
+  <footer class="text-center py-3 text-muted small">
+    © 2025 Energisa Minas Rio — Portal dos Atletas
+  </footer>
+
+  <script type="module">
+    import { auth, db } from "./firebase/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { addDoc, collection, serverTimestamp, getDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    const btnSalvar = document.getElementById("btnSalvar");
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      btnSalvar.addEventListener("click", async () => {
+        const tipo = document.getElementById("tipo").value;
+        const data = document.getElementById("data").value;
+        const obs = document.getElementById("obs").value.trim();
+
+        if (!tipo || !data) {
+          alert("Preencha o tipo e a data da atividade!");
+          return;
+        }
+
+        try {
+          // Pega os dados do atleta
+          const atletaDoc = await getDoc(doc(db, "atletas", user.uid));
+          if (!atletaDoc.exists()) {
+            alert("Erro: dados do atleta não encontrados!");
+            return;
+          }
+
+          const atleta = atletaDoc.data();
+
+          await addDoc(collection(db, "atividades"), {
+            atletaId: user.uid,
+            nomeAtleta: atleta.nome,
+            equipe: atleta.equipe,
+            tipo: tipo,
+            data: data,
+            observacao: obs,
+            pontos: 0,
+            status: "pendente",
+            dataRegistro: serverTimestamp()
+          });
+
+          alert("Atividade registrada com sucesso! Aguarde validação do administrador.");
+          window.location.href = "dashboard.html";
+        } catch (error) {
+          console.error(error);
+          alert("Erro ao salvar atividade: " + error.message);
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
