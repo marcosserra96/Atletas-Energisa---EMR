@@ -119,3 +119,56 @@ footer {
     font-size: 1.4rem;
   }
 }
+/* ===== CABEÇALHO MODERNO ENERGISA ===== */
+.portal-header {
+  background: linear-gradient(100deg, #009BC1 0%, #00A3B6 40%, #F37021 100%);
+  color: #fff;
+  text-align: center;
+  padding: 35px 20px;
+  border-bottom-left-radius: 14px;
+  border-bottom-right-radius: 14px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efeito leve de brilho diagonal */
+.portal-header::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 60%);
+  pointer-events: none;
+}
+
+.portal-header h1 {
+  font-weight: 700;
+  font-size: 1.9rem;
+  letter-spacing: -0.3px;
+  margin-bottom: 5px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.portal-header p {
+  font-weight: 400;
+  font-size: 1rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+/* Versão responsiva */
+@media (max-width: 768px) {
+  .portal-header {
+    padding: 28px 14px;
+  }
+  .portal-header h1 {
+    font-size: 1.5rem;
+  }
+  .portal-header p {
+    font-size: 0.9rem;
+  }
+}
+
