@@ -3,48 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Atletas Energisa</title>
+  <title>Portal dos Atletas Energisa</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="assets/style.css" rel="stylesheet">
-  <script type="module" src="firebase/firebase-config.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
 </head>
 
 <body>
-<header class="portal-header">
-  <h1>🏅 Portal dos Atletas Energisa</h1>
-  <p>Corrida e Bicicleta — acompanhe seu desempenho!</p>
-</header>
 
+  <!-- ===== CABEÇALHO ===== -->
+  <header class="portal-header">
+    <h1>🏅 Portal dos Atletas Energisa</h1>
+    <p>Corrida e Bicicleta — acompanhe seu desempenho!</p>
+  </header>
+  <div class="barra-colorida"></div>
 
-  <main class="container my-5">
-    <!-- Ranking Corrida -->
-    <section id="ranking-corrida" class="mb-5">
-      <h2 class="fw-bold text-primary mb-4 text-center">🏃 Equipe de Corrida</h2>
-      <div id="lista-corrida" class="list-group shadow-sm"></div>
-      <div class="text-center mt-3">
-        <a href="ranking-corrida.html" class="btn btn-primary">Ver Ranking Completo</a>
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="container my-5 text-center">
+    <h3 class="text-primary mb-3">🏃‍♂️ Equipe de Corrida</h3>
+    <div class="list-group shadow-sm mb-4">
+      <div class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
+        <span>1. Marcos Paulo Nunes Serra</span>
+        <span class="badge bg-primary rounded-pill">0 pts</span>
       </div>
-    </section>
+    </div>
 
-    <!-- Ranking Bicicleta -->
-    <section id="ranking-bike" class="mb-5">
-      <h2 class="fw-bold text-primary mb-4 text-center">🚴 Equipe de Bicicleta</h2>
-      <div id="lista-bike" class="list-group shadow-sm"></div>
-      <div class="text-center mt-3">
-        <a href="ranking-bicicleta.html" class="btn btn-primary">Ver Ranking Completo</a>
+    <button class="btn btn-primary mb-5"><i class="bi bi-trophy-fill me-2"></i>Ver Ranking Completo</button>
+
+    <h3 class="text-primary mb-3">🚴‍♀️ Equipe de Bicicleta</h3>
+    <div class="list-group shadow-sm mb-4">
+      <div class="list-group-item d-flex justify-content-between align-items-center fw-semibold">
+        <span>1. (sem atletas ainda)</span>
+        <span class="badge bg-primary rounded-pill">0 pts</span>
       </div>
-    </section>
+    </div>
 
-    <div class="text-center">
-      <a href="login.html" class="btn btn-outline-primary">Acessar Meu Painel</a>
+    <button class="btn btn-primary mb-4"><i class="bi bi-trophy me-2"></i>Ver Ranking Completo</button>
+
+    <div>
+      <a href="login.html" class="btn btn-outline-primary"><i class="bi bi-person-circle me-2"></i>Acessar Meu Painel</a>
     </div>
   </main>
 
-  <footer class="text-center py-3 text-muted small">
+  <!-- ===== RODAPÉ ===== -->
+  <footer>
     © 2025 Energisa Minas Rio — Portal dos Atletas
   </footer>
 
-  <script type="module" src="assets/script.js"></script>
+  <!-- ===== BOTÃO ADMIN ===== -->
+  <button id="btnAdmin" class="admin-gear">
+    <i class="bi bi-gear-fill"></i>
+  </button>
+
+  <!-- ===== MODAL DE SENHA ADMIN ===== -->
+  <div id="adminModal" class="admin-modal">
+    <div class="admin-content">
+      <h3>🔒 Acesso Administrativo</h3>
+      <input type="password" id="adminSenha" placeholder="Digite a senha" class="form-control mb-3">
+      <button id="btnEntrarAdmin" class="btn btn-primary w-100">Entrar</button>
+      <button id="btnFecharModal" class="btn btn-outline-light w-100 mt-2">Fechar</button>
+    </div>
+  </div>
+
+  <script type="module" src="admin-access.js"></script>
 </body>
 </html>
