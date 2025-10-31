@@ -1,0 +1,20 @@
+:root {
+  --energisa-azul: #009BC1;
+  --energisa-laranja: #F37021;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f8f9fa;
+}
+
+header {
+  background: linear-gradient(90deg, var(--energisa-azul), var(--energisa-laranja));
+}
+
+.list-group-item {
+  border: none;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
