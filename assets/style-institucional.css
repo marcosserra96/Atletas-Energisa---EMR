@@ -14,14 +14,35 @@ body {
 }
 
 /* ===== CABEÇALHO INSTITUCIONAL ===== */
+/* ===== CABEÇALHO INSTITUCIONAL ===== */
 .header-energisa {
-  background: linear-gradient(90deg, var(--azul), var(--verde));
-  padding: 18px 0;
+  background: linear-gradient(90deg, #009BC1, #00A69C);
+  padding: 16px 0;
   color: #fff;
 }
 
+.header-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.header-right {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
 .logo-energisa {
-  height: 36px;
+  height: 34px;
   width: auto;
   flex-shrink: 0;
 }
@@ -30,19 +51,20 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  line-height: 1.1;
 }
 
 .titulo-portal {
   font-weight: 600;
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   color: #fff;
-  line-height: 1.1;
 }
 
 .subtitulo-portal {
   font-size: 0.9rem;
   color: #e9f7fa;
   letter-spacing: 0.4px;
+  margin-top: 1px;
 }
 
 .btn-outline-light {
@@ -54,7 +76,7 @@ body {
 
 .btn-outline-light:hover {
   background: #fff;
-  color: var(--azul);
+  color: #009BC1;
 }
 
 /* ===== BANNER INTRODUTÓRIO ===== */
