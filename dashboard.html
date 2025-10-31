@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Atleta - Atletas Energisa</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/style.css" rel="stylesheet">
+  <script type="module" src="firebase/firebase-config.js"></script>
+</head>
+
+<body class="bg-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container-fluid justify-content-between">
+      <span class="navbar-brand fw-bold">Atletas Energisa</span>
+      <button id="logoutBtn" class="btn btn-outline-light btn-sm">Sair</button>
+    </div>
+  </nav>
+
+  <main class="container my-5">
+    <div class="card shadow p-4 text-center">
+      <h2 id="nomeAtleta" class="fw-bold text-primary mb-2"></h2>
+      <p id="equipeAtleta" class="mb-3 text-muted"></p>
+
+      <h3 class="display-5 fw-bold text-success mb-3" id="pontosAtleta">0 pts</h3>
+      <p class="text-muted mb-0">Pontuação Total</p>
+
+      <hr class="my-4">
+
+      <h5 class="fw-bold mb-3">QR Code Pessoal</h5>
+      <canvas id="qrcode"></canvas>
+    </div>
+  </main>
+
+  <footer class="text-center py-3 text-muted small">
+    © 2025 Energisa Minas Rio — Portal dos Atletas
+  </footer>
+
+  <script type="module">
+    import { auth } from "./firebase/firebase-config.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.esm.js";
+
+    const nomeAtleta = document.getElementById("nomeAtleta");
+    const equipeAtleta = document.getElementById("equipeAtleta");
+    const pontosAtleta = document.getElementById("pontosAtleta");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const atletaData = JSON.parse(localStorage.getItem("atletaData"));
+      if (atletaData) {
+        nomeAtleta.textContent = atletaData.nome;
+        equipeAtleta.textContent = atletaData.equipe === "corrida" ? "🏃 Equipe de Corrida" : "🚴 Equipe de Bicicleta";
+        pontosAtleta.textContent = `${atletaData.pontosTotais ?? 0} pts`;
+
+        // Gera QR Code com o UID do atleta (poderá ser usado para registrar treinos)
+        QRCode.toCanvas(document.getElementById("qrcode"), atletaData.uid, { width: 160 });
+      }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      localStorage.removeItem("atletaData");
+      window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>
