@@ -3,103 +3,96 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Portal dos Atletas Energisa</title>
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="assets/style-institucional.css" />
-</head>
-
-<body>
-  <!-- ===== CABEÇALHO ===== -->
-<header class="header-energisa shadow-sm">
-  <div class="container header-layout">
-    <div class="d-flex align-items-center gap-3 header-left">
-      <img src="assets/logo-energisa.svg" alt="Energisa" class="logo-energisa" />
-      <div class="titulo-area">
-        <h1 class="titulo-portal mb-0">Portal dos Atletas</h1>
-        <p class="subtitulo-portal mb-0">Energisa Minas Rio</p>
-      </div>
-    </div>
-
-    <div class="header-right">
-      <a href="#" class="btn btn-outline-light fw-semibold px-3 py-1">Entrar</a>
-    </div>
-  </div>
-</header>
-
-
-  <!-- ===== BANNER INSTITUCIONAL ===== -->
-  <section class="banner-intro text-center py-4">
-    <div class="container">
-      <h2 class="fw-semibold">
-        Explore o nosso <span class="texto-destaque">ecossistema esportivo</span>
-      </h2>
-      <p class="text-muted">
-        Acompanhe o desempenho dos nossos atletas nas equipes de corrida e bicicleta.
-      </p>
-    </div>
-  </section>
-
-  <!-- ===== CARDS DE RANKINGS ===== -->
-  <main class="container my-5">
-    <div class="row g-4 justify-content-center">
-      <!-- Corrida -->
-      <div class="col-md-6 col-lg-4">
-        <div class="card card-energisa p-4">
-          <div class="icon-card bg-azul"><i class="bi bi-person-running"></i></div>
-          <h4 class="fw-semibold mt-3">Equipe de Corrida</h4>
-          <p class="text-muted mb-3">Top 3 atletas com melhor desempenho.</p>
-          <ul id="rankingCorrida" class="ranking-list"></ul>
-          <button class="btn btn-energisa mt-auto">Ver Ranking Completo</button>
-        </div>
-      </div>
-
-      <!-- Bicicleta -->
-      <div class="col-md-6 col-lg-4">
-        <div class="card card-energisa p-4">
-          <div class="icon-card bg-verde"><i class="bi bi-bicycle"></i></div>
-          <h4 class="fw-semibold mt-3">Equipe de Bicicleta</h4>
-          <p class="text-muted mb-3">Top 3 ciclistas mais bem colocados.</p>
-          <ul id="rankingBicicleta" class="ranking-list"></ul>
-          <button class="btn btn-energisa mt-auto">Ver Ranking Completo</button>
-        </div>
-      </div>
-
-      <!-- Geral -->
-      <div class="col-md-6 col-lg-4">
-        <div class="card card-energisa p-4">
-          <div class="icon-card bg-laranja"><i class="bi bi-trophy-fill"></i></div>
-          <h4 class="fw-semibold mt-3">Ranking Geral</h4>
-          <p class="text-muted mb-3">Soma dos pontos de todas as modalidades.</p>
-          <ul id="rankingGeral" class="ranking-list"></ul>
-          <button class="btn btn-energisa mt-auto">Ver Classificação</button>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- ===== RODAPÉ ===== -->
-  <footer class="footer-energisa text-center py-4">
-    <img src="assets/logo-energisa.svg" alt="Logo Energisa" class="logo-footer mb-2" />
-    <p class="text-muted small mb-0">© 2025 Energisa Minas Rio — Portal dos Atletas</p>
-  </footer>
-
-  <!-- ===== BOTÃO ADMIN ===== -->
-  <button class="admin-btn" onclick="abrirPainelAdmin()">
-    <i class="bi bi-gear-fill"></i>
-  </button>
-
-  <script type="module" src="js/ranking.js"></script>
-  <script>
-    function abrirPainelAdmin() {
-      const senha = prompt("Digite a senha de administrador:");
-      if (senha === "energisa2025") {
-        window.location.href = "admin.html";
-      } else if (senha) {
-        alert("Senha incorreta!");
-      }
+  <title>Portal dos Atletas — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(120deg, #009BC1, #00A69C);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
     }
+    .login-box {
+      background: #fff;
+      padding: 40px 50px;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    h1 {
+      color: #009BC1;
+      font-size: 1.6rem;
+      margin-bottom: 24px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+    button {
+      background: linear-gradient(90deg, #009BC1, #00A69C);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      padding: 10px;
+      width: 100%;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover { opacity: 0.9; }
+    .footer { margin-top: 20px; font-size: 0.8rem; color: #555; }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h1>Portal dos Atletas</h1>
+    <input type="email" id="email" placeholder="E-mail" />
+    <input type="password" id="password" placeholder="Senha" />
+    <button id="loginBtn">Entrar</button>
+    <p class="footer">© 2025 Energisa Minas Rio</p>
+  </div>
+
+  <script type="module">
+    import { app, auth, db } from "./assets/scripts/firebase-config.js";
+    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    const loginBtn = document.getElementById('loginBtn');
+    loginBtn.addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          const role = userSnap.data().role;
+          localStorage.setItem("userRole", role);
+
+          if (role === "admin") window.location.href = "admin.html";
+          else if (role === "comite") window.location.href = "admin-metas.html";
+          else window.location.href = "atleta.html";
+        } else {
+          alert("Usuário sem função atribuída. Contate o administrador.");
+        }
+      } catch (error) {
+        alert("Erro ao fazer login: " + error.message);
+      }
+    });
   </script>
 </body>
 </html>
