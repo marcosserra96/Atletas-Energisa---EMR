@@ -253,3 +253,7 @@ body {
     height: 32px;
   }
 }
+/* Evita sobreposição do rodapé */
+body {
+  padding-bottom: 50px; /* espaço reservado ao rodapé */
+}
