@@ -2,174 +2,92 @@
 
 :root {
   --azul: #009BC1;
+  --verde: #00A6A0;
   --laranja: #F37021;
-  --fundo: #f5f7fa;
-  --card: rgba(255, 255, 255, 0.15);
-  --borda: rgba(255, 255, 255, 0.25);
-  --texto: #222;
-  --radius: 14px;
-  --sombra: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --cinza-claro: #f6f9fb;
 }
 
-/* ===== BASE ===== */
 body {
-  margin: 0;
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(180deg, #f8fafc 0%, #eef2f4 100%);
-  color: var(--texto);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  background: var(--cinza-claro);
+  color: #333;
+  margin: 0;
 }
 
-/* ===== CABEÇALHO ===== */
-.portal-header {
-  background: linear-gradient(100deg, #009BC1 0%, #00A3B6 40%, #F37021 100%);
-  color: #fff;
-  text-align: center;
-  padding: 35px 20px;
-  border-bottom-left-radius: 14px;
-  border-bottom-right-radius: 14px;
-  box-shadow: var(--sombra);
-  position: relative;
-  overflow: hidden;
+/* ===== HEADER ===== */
+.top-header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  padding: 15px 0;
 }
 
-.portal-header::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -50%;
-  width: 200%;
-  height: 100%;
-  background: linear-gradient(120deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 60%);
+.logo-energisa {
+  height: 42px;
 }
 
-.portal-header h1 {
-  font-weight: 700;
-  font-size: 1.9rem;
-  margin-bottom: 5px;
-}
-
-.portal-header p {
-  font-size: 1rem;
-  opacity: 0.9;
-}
-
-.barra-colorida {
-  height: 4px;
-  background: linear-gradient(90deg, #F37021, #FFD166, #009BC1);
-}
-
-/* ===== LISTAS ===== */
-.list-group-item {
-  background: var(--card);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--borda);
-  color: #fff;
-  border-radius: var(--radius);
-  box-shadow: var(--sombra);
-  margin-bottom: 10px;
-  transition: all 0.2s ease;
-}
-
-/* ===== BOTÕES ===== */
-.btn-primary {
-  background: linear-gradient(90deg, var(--azul), var(--laranja));
-  border: none;
-  border-radius: var(--radius);
+.portal-titulo {
   font-weight: 600;
-  transition: all 0.25s ease;
-}
-
-.btn-primary:hover {
-  opacity: 0.9;
-  transform: scale(1.03);
-}
-
-.btn-outline-primary {
-  border: 2px solid var(--azul);
-  border-radius: var(--radius);
   color: var(--azul);
-  font-weight: 500;
 }
 
-.btn-outline-primary:hover {
+/* ===== CARDS ===== */
+.card-energisa {
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.card-energisa:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.icon-card {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.bg-azul { background: var(--azul); }
+.bg-verde { background: var(--verde); }
+.bg-laranja { background: var(--laranja); }
+
+.btn-energisa {
   background: var(--azul);
   color: #fff;
-}
-
-/* ===== RODAPÉ ===== */
-footer {
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(10px);
-  color: #fff;
-  text-align: center;
-  padding: 10px;
-  margin-top: auto;
-  font-size: 0.9rem;
-  border-top: 1px solid rgba(255,255,255,0.2);
-}
-
-/* ===== BOTÃO ADMIN ===== */
-.admin-gear {
-  position: fixed;
-  bottom: 18px;
-  right: 18px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  font-size: 1.4rem;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
+  font-weight: 500;
+  border-radius: 10px;
+  margin-top: 10px;
   transition: all 0.3s ease;
-  z-index: 1000;
 }
 
-.admin-gear:hover {
-  transform: rotate(30deg) scale(1.1);
-  background: rgba(255, 255, 255, 0.25);
-}
-
-/* ===== MODAL ADMIN ===== */
-.admin-modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.admin-content {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(18px);
+.btn-energisa:hover {
+  background: var(--laranja);
   color: #fff;
-  border-radius: 14px;
-  padding: 30px;
-  width: 90%;
-  max-width: 380px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  text-align: center;
-  animation: fadeIn 0.4s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ===== TÍTULO ===== */
+.texto-destaque {
+  background: var(--azul);
+  color: white;
+  padding: 3px 12px;
+  border-radius: 16px;
 }
 
-.logo-header {
-  height: 50px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+/* ===== FOOTER ===== */
+.footer {
+  background: white;
+  border-top: 1px solid #e5e7eb;
+}
+
+.logo-footer {
+  height: 36px;
+  opacity: 0.9;
 }
