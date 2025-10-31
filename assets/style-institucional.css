@@ -210,24 +210,30 @@ body {
   transform: rotate(20deg);
 }
 
-/* ===== RODAPÉ ===== */
+/* ===== RODAPÉ INSTITUCIONAL ===== */
 .footer-energisa {
   background: #fff;
-  border-top: 1px solid #eaeaea;
-  padding: 2rem 0;
+  border-top: 1px solid #e5e5e5;
+  padding: 10px 0;
   text-align: center;
-}
-
-.logo-footer {
-  height: 40px;
-  opacity: 0.9;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
 }
 
 .footer-energisa p {
   color: #777;
-  font-size: 0.85rem;
-  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  margin: 0;
 }
+
+.logo-footer {
+  height: 28px;
+  opacity: 0.85;
+}
+
 
 /* ===== RESPONSIVIDADE ===== */
 @media (max-width: 768px) {
