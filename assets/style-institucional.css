@@ -1,58 +1,70 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
 
 :root {
-  --azul: #009BC1;
-  --verde: #00A6A0;
-  --laranja: #F37021;
-  --cinza-claro: #f6f9fb;
+  --azul: #009bc1;
+  --verde: #00a69c;
+  --laranja: #f37021;
+  --cinza: #f5f8fa;
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
-  background: var(--cinza-claro);
+  font-family: "Poppins", sans-serif;
+  background: var(--cinza);
   color: #333;
-  margin: 0;
 }
 
-/* ===== HEADER ===== */
-.top-header {
-  background: white;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  padding: 15px 0;
+/* ===== CABEÇALHO ===== */
+.header-energisa {
+  background: linear-gradient(90deg, var(--azul), var(--laranja));
+  padding: 18px 0;
+  color: #fff;
 }
-
 .logo-energisa {
-  height: 42px;
+  height: 44px;
+}
+.titulo-portal {
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: #fff;
 }
 
-.portal-titulo {
-  font-weight: 600;
-  color: var(--azul);
+/* ===== BANNER ===== */
+.banner-intro {
+  background: #fff;
+  border-bottom: 1px solid #eaeaea;
+}
+.texto-destaque {
+  background: var(--azul);
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 12px;
 }
 
 /* ===== CARDS ===== */
 .card-energisa {
+  background: #fff;
   border: none;
-  border-radius: 18px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
-  background: white;
+  border-radius: 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  min-height: 270px;
   transition: all 0.3s ease;
 }
-
 .card-energisa:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
 }
 
 .icon-card {
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  color: white;
-  font-size: 1.5rem;
+  color: #fff;
+  font-size: 1.6rem;
 }
 
 .bg-azul { background: var(--azul); }
@@ -61,57 +73,11 @@ body {
 
 .btn-energisa {
   background: var(--azul);
-  color: #fff;
-  font-weight: 500;
-  border-radius: 10px;
-  margin-top: 10px;
-  transition: all 0.3s ease;
-}
-
-.btn-energisa:hover {
-  background: var(--laranja);
-  color: #fff;
-}
-
-/* ===== TÍTULOS ===== */
-.texto-destaque {
-  background: var(--azul);
   color: white;
-  padding: 3px 12px;
-  border-radius: 16px;
-}
-
-/* ===== RANKINGS ===== */
-.ranking-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.ranking-list li {
-  background: #f8fafc;
-  border-radius: 10px;
-  padding: 8px 12px;
-  margin-bottom: 6px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   font-weight: 500;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  border-radius: 10px;
+  border: none;
+  transition: all 0.3s;
+  padding: 8px 12px;
 }
-
-.ranking-list li span {
-  color: #555;
-  font-size: 0.9rem;
-}
-
-/* ===== FOOTER ===== */
-.footer {
-  background: white;
-  border-top: 1px solid #e5e7eb;
-}
-
-.logo-footer {
-  height: 36px;
-  opacity: 0.9;
-}
+.btn-energisa:hover {
