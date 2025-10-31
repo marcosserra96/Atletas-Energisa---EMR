@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+:root {
+  --azul: #009BC1;
+  --verde: #00A6A0;
+  --laranja: #F37021;
+  --cinza-claro: #f6f9fb;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--cinza-claro);
+  color: #333;
+  margin: 0;
+}
+
+/* ===== HEADER ===== */
+.top-header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  padding: 15px 0;
+}
+
+.logo-energisa {
+  height: 42px;
+}
+
+.portal-titulo {
+  font-weight: 600;
+  color: var(--azul);
+}
+
+/* ===== CARDS ===== */
+.card-energisa {
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.card-energisa:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.icon-card {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.bg-azul { background: var(--azul); }
+.bg-verde { background: var(--verde); }
+.bg-laranja { background: var(--laranja); }
+
+.btn-energisa {
+  background: var(--azul);
+  color: #fff;
+  font-weight: 500;
+  border-radius: 10px;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+}
+
+.btn-energisa:hover {
+  background: var(--laranja);
+  color: #fff;
+}
+
+/* ===== TÍTULOS ===== */
+.texto-destaque {
+  background: var(--azul);
+  color: white;
+  padding: 3px 12px;
+  border-radius: 16px;
+}
+
+/* ===== RANKINGS ===== */
+.ranking-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ranking-list li {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.ranking-list li span {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  background: white;
+  border-top: 1px solid #e5e7eb;
+}
+
+.logo-footer {
+  height: 36px;
+  opacity: 0.9;
+}
