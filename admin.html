@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel de Administração — Portal dos Atletas Energisa</title>
+
+  <!-- Fonte e estilo -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="assets/style-institucional.css" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f5f8fa;
+      margin: 0;
+      padding-bottom: 60px;
+    }
+
+    .admin-container {
+      max-width: 700px;
+      margin: 60px auto 100px;
+      background: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .admin-container h2 {
+      color: #009BC1;
+      font-weight: 600;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .admin-container section {
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="file"] {
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      font-size: 0.95rem;
+    }
+
+    button {
+      width: 100%;
+      background: linear-gradient(90deg, #009BC1, #00A69C);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 600;
+      padding: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .back-btn {
+      position: absolute;
+      right: 40px;
+      top: 20px;
+      background: transparent;
+      border: 1.3px solid #fff;
+      color: #fff;
+      border-radius: 8px;
+      padding: 4px 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+
+    .back-btn:hover {
+      background: #fff;
+      color: #009BC1;
+    }
+
+    .icon {
+      font-size: 1.2rem;
+    }
+
+    /* Rodapé fixo institucional */
+    .footer-energisa {
+      background: #fff;
+      border-top: 1px solid #e5e5e5;
+      padding: 10px 0;
+      text-align: center;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: 10;
+    }
+
+    .footer-energisa p {
+      color: #777;
+      font-size: 0.8rem;
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Cabeçalho -->
+  <header class="header-energisa">
+    <div class="container header-layout">
+      <div class="header-left">
+        <img src="assets/logo-energisa.svg" alt="Energisa" class="logo-energisa" />
+        <div class="titulo-area">
+          <h1 class="titulo-portal mb-0">Portal dos Atletas</h1>
+          <p class="subtitulo-portal mb-0">Energisa Minas Rio</p>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <a href="index.html" class="back-btn">← Voltar</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Painel -->
+  <main class="admin-container">
+    <section>
+      <h2><span class="icon">🖼️</span> Logo do Portal</h2>
+      <input type="file" id="logoInput">
+      <button id="uploadLogo">Enviar Logo</button>
+    </section>
+
+    <section>
+      <h2><span class="icon">📝</span> Nome e Descrição do Portal</h2>
+      <input type="text" id="portalName" placeholder="Nome do Portal">
+      <input type="text" id="portalDesc" placeholder="Descrição (ex: Corrida e Bicicleta)">
+      <button id="saveInfo">Salvar Alterações</button>
+    </section>
+
+    <section>
+      <h2><span class="icon">🔒</span> Alterar Senha Administrativa</h2>
+      <input type="password" id="currentPassword" placeholder="Senha atual">
+      <input type="password" id="newPassword" placeholder="Nova senha">
+      <input type="password" id="confirmPassword" placeholder="Confirmar nova senha">
+      <button id="changePassword">Alterar Senha</button>
+    </section>
+  </main>
+
+  <!-- Rodapé -->
+  <footer class="footer-energisa">
+    <p>© 2025 Energisa Minas Rio — Portal dos Atletas</p>
+  </footer>
+
+  <script>
+    document.getElementById('uploadLogo').addEventListener('click', () => {
+      alert('Função de upload da logo em desenvolvimento.');
+    });
+
+    document.getElementById('saveInfo').addEventListener('click', () => {
+      alert('Nome e descrição salvos!');
+    });
+
+    document.getElementById('changePassword').addEventListener('click', () => {
+      const newPass = document.getElementById('newPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      if (newPass !== confirm) {
+        alert('As senhas não coincidem.');
+        return;
+      }
+      alert('Senha alterada com sucesso!');
+    });
+  </script>
+</body>
+</html>
