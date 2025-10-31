@@ -13,6 +13,9 @@ onAuthStateChanged(auth, async (user) => {
 
   const tabelaPendentes = document.querySelector("#atividadesPendentes tbody");
   const listaEventos = document.getElementById("listaEventos");
+  const rankingBody = document.querySelector("#rankingTabela tbody");
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  let tipoAtual = "bike";
 
   // 🔄 Carrega atividades pendentes
   const q = query(collection(db, "atividades"), where("status", "==", "pendente"));
@@ -98,6 +101,56 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("dataEvento").value = "";
     document.getElementById("pontosEvento").value = "";
   });
+
+  // 🏆 Ranking consolidado
+  tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      tabButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      tipoAtual = btn.getAttribute("data-tipo");
+      carregarRanking(tipoAtual);
+    });
+  });
+
+  async function carregarRanking(tipo) {
+    const q = query(collection(db, "atividades"), where("tipo", "==", tipo), where("status", "==", "validado"));
+    const snapshot = await getDocs(q);
+    const usersSnap = await getDocs(collection(db, "users"));
+    const userMap = {};
+    usersSnap.forEach(u => userMap[u.id] = u.data().nome);
+
+    const ranking = {};
+    snapshot.forEach(docSnap => {
+      const d = docSnap.data();
+      if (!ranking[d.atletaId]) {
+        ranking[d.atletaId] = { km: 0, atividades: 0, pontos: 0 };
+      }
+      ranking[d.atletaId].km += Number(d.km || 0);
+      ranking[d.atletaId].atividades++;
+      ranking[d.atletaId].pontos += (d.pontuacao || 0) + (d.eventoExtra ? 10 : 0);
+    });
+
+    const lista = Object.keys(ranking).map(uid => ({
+      nome: userMap[uid] || "—",
+      ...ranking[uid]
+    })).sort((a, b) => b.pontos - a.pontos);
+
+    rankingBody.innerHTML = "";
+    lista.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.nome}</td>
+        <td>${r.km.toFixed(1)}</td>
+        <td>${r.atividades}</td>
+        <td><strong>${r.pontos}</strong></td>
+      `;
+      rankingBody.appendChild(tr);
+    });
+  }
+
+  // 🔁 Atualiza ranking em tempo real
+  onSnapshot(collection(db, "atividades"), () => carregarRanking(tipoAtual));
+  carregarRanking(tipoAtual);
 
   // 🔴 Logout
   document.getElementById("logoutBtn").addEventListener("click", async () => {
