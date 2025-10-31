@@ -11,32 +11,27 @@ async function carregarRanking() {
   rankingGeral.innerHTML = "<li>Carregando...</li>";
 
   try {
-    // 🔹 Busca coleções do Firestore
     const corridaSnap = await getDocs(collection(db, "corrida"));
     const bicicletaSnap = await getDocs(collection(db, "bicicleta"));
 
-    // 🔹 Converte os dados
     const corrida = corridaSnap.docs.map(doc => doc.data());
     const bicicleta = bicicletaSnap.docs.map(doc => doc.data());
 
-    // 🔹 Ordena por pontos
     corrida.sort((a, b) => b.pontos - a.pontos);
     bicicleta.sort((a, b) => b.pontos - a.pontos);
 
-    // 🔹 Monta o top 3
     exibirTop(rankingCorrida, corrida);
     exibirTop(rankingBicicleta, bicicleta);
 
-    // 🔹 Calcula ranking geral
     const todos = [...corrida, ...bicicleta];
-    const mapa = {};
+    const geralMap = {};
 
-    todos.forEach(atleta => {
-      if (!mapa[atleta.nome]) mapa[atleta.nome] = 0;
-      mapa[atleta.nome] += atleta.pontos;
+    todos.forEach(a => {
+      if (!geralMap[a.nome]) geralMap[a.nome] = 0;
+      geralMap[a.nome] += a.pontos;
     });
 
-    const geral = Object.entries(mapa)
+    const geral = Object.entries(geralMap)
       .map(([nome, pontos]) => ({ nome, pontos }))
       .sort((a, b) => b.pontos - a.pontos);
 
