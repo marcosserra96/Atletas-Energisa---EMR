@@ -81,3 +81,54 @@ body {
   padding: 8px 12px;
 }
 .btn-energisa:hover {
+  background: var(--laranja);
+}
+
+/* ===== LISTA DE RANKINGS ===== */
+.ranking-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.ranking-list li {
+  background: #f9fafc;
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ===== BOTÃO ADMIN ===== */
+.admin-btn {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  background: var(--azul);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  width: 52px;
+  height: 52px;
+  font-size: 1.4rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+.admin-btn:hover {
+  background: var(--laranja);
+  transform: rotate(20deg);
+}
+
+/* ===== RODAPÉ ===== */
+.footer-energisa {
+  background: #fff;
+  border-top: 1px solid #eaeaea;
+}
+.logo-footer {
+  height: 40px;
+  opacity: 0.9;
+}
