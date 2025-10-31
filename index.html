@@ -15,6 +15,7 @@
       height: 100vh;
       margin: 0;
     }
+
     .login-box {
       background: #fff;
       padding: 40px 50px;
@@ -24,12 +25,15 @@
       max-width: 400px;
       text-align: center;
       position: relative;
+      overflow: hidden;
     }
+
     h1 {
       color: #009BC1;
       font-size: 1.6rem;
       margin-bottom: 24px;
     }
+
     input, select {
       width: 100%;
       padding: 12px;
@@ -38,6 +42,7 @@
       border-radius: 8px;
       font-size: 0.95rem;
     }
+
     button {
       background: linear-gradient(90deg, #009BC1, #00A69C);
       border: none;
@@ -49,17 +54,42 @@
       font-size: 1rem;
       cursor: pointer;
       margin-top: 10px;
+      transition: opacity 0.3s;
     }
+
     button:hover { opacity: 0.9; }
+
     .footer { margin-top: 20px; font-size: 0.8rem; color: #555; }
+
     .toggle {
       color: #009BC1;
       cursor: pointer;
       margin-top: 10px;
       font-size: 0.9rem;
       display: inline-block;
+      font-weight: 600;
+      transition: color 0.3s;
     }
-    .hidden { display: none; }
+
+    .toggle:hover { color: #00A69C; }
+
+    /* Transição suave entre formulários */
+    .form-container {
+      transition: all 0.5s ease;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      opacity: 0;
+      transform: translateY(40px);
+      pointer-events: none;
+    }
+
+    .form-container.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
   </style>
 </head>
 
@@ -67,16 +97,16 @@
   <div class="login-box">
     <h1 id="titulo">Portal dos Atletas</h1>
 
-    <!-- Login -->
-    <div id="loginForm">
+    <!-- LOGIN -->
+    <div id="loginForm" class="form-container active">
       <input type="email" id="loginEmail" placeholder="E-mail" />
       <input type="password" id="loginSenha" placeholder="Senha" />
       <button id="loginBtn">Entrar</button>
       <span class="toggle" id="toCadastro">Novo por aqui? Crie sua conta</span>
     </div>
 
-    <!-- Cadastro -->
-    <div id="cadastroForm" class="hidden">
+    <!-- CADASTRO -->
+    <div id="cadastroForm" class="form-container">
       <input type="text" id="cadastroNome" placeholder="Nome completo" />
       <input type="email" id="cadastroEmail" placeholder="E-mail corporativo" />
       <input type="password" id="cadastroSenha" placeholder="Senha" />
@@ -104,20 +134,29 @@
     const toCadastro = document.getElementById('toCadastro');
     const toLogin = document.getElementById('toLogin');
 
-    // Alternar formulários
-    toCadastro.onclick = () => { loginForm.classList.add('hidden'); cadastroForm.classList.remove('hidden'); };
-    toLogin.onclick = () => { cadastroForm.classList.add('hidden'); loginForm.classList.remove('hidden'); };
+    // 🔄 Alternância suave entre formulários
+    toCadastro.addEventListener("click", () => {
+      loginForm.classList.remove("active");
+      cadastroForm.classList.add("active");
+    });
 
-    // LOGIN
+    toLogin.addEventListener("click", () => {
+      cadastroForm.classList.remove("active");
+      loginForm.classList.add("active");
+    });
+
+    // 🔐 LOGIN EXISTENTE
     document.getElementById('loginBtn').addEventListener('click', async () => {
       const email = document.getElementById('loginEmail').value.trim();
       const senha = document.getElementById('loginSenha').value.trim();
+      if (!email || !senha) return alert("Preencha todos os campos.");
+
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, senha);
         const user = userCredential.user;
-
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
+
         if (userSnap.exists()) {
           const role = userSnap.data().role;
           localStorage.setItem("userRole", role);
@@ -132,12 +171,13 @@
       }
     });
 
-    // CADASTRO
+    // 🆕 CADASTRO NOVO
     document.getElementById('cadastroBtn').addEventListener('click', async () => {
       const nome = document.getElementById('cadastroNome').value.trim();
       const email = document.getElementById('cadastroEmail').value.trim();
       const senha = document.getElementById('cadastroSenha').value.trim();
       const equipe = document.getElementById('cadastroEquipe').value;
+
       if (!nome || !email || !senha) return alert("Preencha todos os campos.");
 
       try {
