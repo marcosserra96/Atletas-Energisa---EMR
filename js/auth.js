@@ -7,7 +7,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 import { 
-  getFirestore, doc, setDoc, getDocs, collection, query, where 
+  getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ----------------------
@@ -95,11 +95,32 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
   }
 
   try {
-    await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // 🔍 Busca nome e grupo no Firestore
+    const docRef = doc(db, "atletas", user.uid);
+    const docSnap = await getDoc(docRef);
+
+    let nomeUsuario = "Usuário";
+    let grupo = "";
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      nomeUsuario = data.nome || nomeUsuario;
+      grupo = data.grupo || "";
+    } else {
+      nomeUsuario = user.email.split("@")[0];
+    }
+
+    // 💾 Armazena no localStorage
+    localStorage.setItem("userName", nomeUsuario);
+    localStorage.setItem("userGroup", grupo);
+
     showToast("Login realizado com sucesso! Redirecionando...", "success");
 
     setTimeout(() => {
-      window.location.href = "portal.html"; // página principal
+      window.location.href = "portal.html";
     }, 1500);
 
   } catch (error) {
@@ -167,6 +188,10 @@ document.getElementById("registerBtn").addEventListener("click", async () => {
       grupo: team,
       criadoEm: new Date().toISOString()
     });
+
+    // 💾 Salva no localStorage para exibição imediata
+    localStorage.setItem("userName", name);
+    localStorage.setItem("userGroup", team);
 
     showToast("Cadastro realizado com sucesso! Você já pode acessar sua conta.", "success");
     document.getElementById("registerModal").style.display = "none";
