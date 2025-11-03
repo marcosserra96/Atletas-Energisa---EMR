@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Comitê - Energisa</title>
+
+  <!-- FONTE E ICONES -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- CSS PRINCIPAL -->
+  <link rel="stylesheet" href="css/portal.css" />
+
+  <!-- CHART.JS PARA DASHBOARD -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <!-- ===================================================== -->
+  <!-- 🟢 TOPO FIXO -->
+  <!-- ===================================================== -->
+  <header class="topbar">
+    <div class="left">
+      <img src="/assets/logo-energisa-branca.svg" alt="Energisa" class="logo" />
+      <span class="portal-nome">Portal Comitê</span>
+    </div>
+
+    <div class="right">
+      <button id="theme-toggle" class="theme-toggle" title="Alternar tema">
+        <i data-lucide="moon"></i>
+      </button>
+      <span id="userName">Usuário</span>
+      <button id="logoutBtn" class="btn-primario">
+        <i data-lucide="log-out"></i> Sair
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================================================== -->
+  <!-- 🔹 MENU FLUTUANTE -->
+  <!-- ===================================================== -->
+  <nav class="menu-flutuante">
+    <div class="menu-item active" data-section="inicio">
+      <i data-lucide="home"></i><span>Início</span>
+    </div>
+    <div class="menu-item" data-section="atletas">
+      <i data-lucide="users"></i><span>Atletas</span>
+    </div>
+    <div class="menu-item" data-section="eventos">
+      <i data-lucide="calendar"></i><span>Eventos</span>
+    </div>
+    <div class="menu-item" data-section="criterios">
+      <i data-lucide="check-circle"></i><span>Critérios</span>
+    </div>
+    <div class="menu-item" data-section="config">
+      <i data-lucide="settings"></i><span>Configurações</span>
+    </div>
+  </nav>
+
+  <!-- ===================================================== -->
+  <!-- 🧭 SEÇÕES PRINCIPAIS -->
+  <!-- ===================================================== -->
+  <main>
+    <!-- 🏠 DASHBOARD -->
+    <section id="inicio" class="active-section">
+      <h2>Visão Geral</h2>
+      <div class="cards">
+        <div class="card">
+          <i data-lucide="users"></i>
+          <h3>Atletas</h3>
+          <p id="totalAtletas">–</p>
+        </div>
+        <div class="card">
+          <i data-lucide="calendar"></i>
+          <h3>Eventos</h3>
+          <p id="totalEventos">–</p>
+        </div>
+        <div class="card">
+          <i data-lucide="star"></i>
+          <h3>Critérios</h3>
+          <p id="totalCriterios">–</p>
+        </div>
+      </div>
+
+      <div class="cards" style="margin-top: 30px;">
+        <div class="card" style="grid-column: span 2;">
+          <h3>Participações Mensais</h3>
+          <canvas id="graficoParticipacao"></canvas>
+        </div>
+        <div class="card">
+          <h3>Ranking de Pontuação</h3>
+          <ul id="rankingList" style="list-style:none; padding:0; margin:0;"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 👥 ATLETAS -->
+    <section id="atletas">
+      <div class="header-acao">
+        <h2>Gerenciar Atletas</h2>
+      </div>
+      <table class="tabela-simples">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Equipe</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="listaAtletas">
+          <tr><td colspan="4" style="text-align:center; color:#999;">Carregando...</td></tr>
+        </tbody>
+      </table>
+
+      <div class="header-acao" style="margin-top:20px;">
+        <h3>Validação de Treinos</h3>
+        <button class="btn-acao" id="btnValidarTreino">
+          <i data-lucide="check"></i> Validar Treino
+        </button>
+      </div>
+
+      <table class="tabela-simples">
+        <thead>
+          <tr>
+            <th>Atleta</th>
+            <th>Evento</th>
+            <th>Uniforme</th>
+            <th>Presença</th>
+            <th>KM</th>
+          </tr>
+        </thead>
+        <tbody id="listaValidacoes">
+          <tr><td colspan="5" style="text-align:center; color:#999;">Sem treinos para validar.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 📅 EVENTOS -->
+    <section id="eventos">
+      <div class="header-acao">
+        <h2>Eventos</h2>
+        <div class="acoes-evento">
+          <button id="novoEventoBtn" class="btn-acao">
+            <i data-lucide="plus-circle"></i> Novo Evento
+          </button>
+          <button id="alternarVisao" class="btn-acao">
+            <i data-lucide="calendar-days"></i> Calendário
+          </button>
+        </div>
+      </div>
+
+      <div id="listaEventos"></div>
+      <div id="calendarioEventos" style="display:none;"></div>
+    </section>
+
+    <!-- 🏅 CRITÉRIOS -->
+    <section id="criterios">
+      <div class="header-acao">
+        <h2>Critérios de Pontuação</h2>
+        <button id="novoCriterioBtn" class="btn-acao">
+          <i data-lucide="plus-circle"></i> Novo Critério
+        </button>
+      </div>
+      <div id="listaCriterios"></div>
+    </section>
+
+    <!-- ⚙️ CONFIGURAÇÕES -->
+    <section id="config">
+      <h2>Configurações</h2>
+      <button id="btnAlterarSenha" class="btn-acao">
+        <i data-lucide="lock"></i> Alterar Senha
+      </button>
+    </section>
+  </main>
+  <!-- ===================================================== -->
+  <!-- 🗓️ MODAL DE EVENTO -->
+  <!-- ===================================================== -->
+  <div id="modalEvento" class="modal-overlay">
+    <div class="modal">
+      <h3 id="tituloModalEvento">Novo Evento</h3>
+      <label for="eventoTitulo">Título do Evento</label>
+      <input type="text" id="eventoTitulo" placeholder="Ex: Corrida Energisa" />
+
+      <label for="eventoTipo">Tipo</label>
+      <select id="eventoTipo">
+        <option value="">Selecione...</option>
+        <option value="Treino">Treino</option>
+        <option value="Prova">Prova</option>
+        <option value="Extra">Extra</option>
+      </select>
+
+      <label for="eventoEquipe">Equipe</label>
+      <select id="eventoEquipe">
+        <option value="">Selecione...</option>
+        <option value="Corrida">Corrida</option>
+        <option value="Bike">Bike</option>
+        <option value="Ambas">Ambas</option>
+      </select>
+
+      <label for="eventoKm">Distância (km)</label>
+      <input type="number" id="eventoKm" placeholder="Ex: 10" />
+
+      <label for="eventoData">Data</label>
+      <input type="text" id="eventoData" placeholder="Selecione a data" />
+
+      <label for="eventoLink">Link de Referência (opcional)</label>
+      <input type="url" id="eventoLink" placeholder="Ex: https://link.com/evento" />
+
+      <div class="botoes-modal">
+        <button id="cancelarModal" class="btn-cancelar">Cancelar</button>
+        <button id="salvarEvento" class="btn-primario">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- 🏅 MODAL DE CRITÉRIO -->
+  <!-- ===================================================== -->
+  <div id="modalCriterio" class="modal-overlay">
+    <div class="modal">
+      <h3>Novo Critério</h3>
+
+      <label for="criterioDescricao">Descrição</label>
+      <input type="text" id="criterioDescricao" placeholder="Ex: Participação em treino oficial" />
+
+      <label for="criterioPontuacao">Pontuação</label>
+      <input type="number" id="criterioPontuacao" placeholder="Ex: 10" />
+
+      <label for="criterioAplicavel">Aplicável a</label>
+      <select id="criterioAplicavel">
+        <option value="">Selecione...</option>
+        <option value="Global">Global</option>
+        <option value="Corrida">Corrida</option>
+        <option value="Bike">Bike</option>
+      </select>
+
+      <div class="botoes-modal">
+        <button id="cancelarCriterio" class="btn-cancelar">Cancelar</button>
+        <button id="salvarCriterio" class="btn-primario">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- 🔒 MODAL ALTERAR SENHA -->
+  <!-- ===================================================== -->
+  <div id="modalSenha" class="modal-overlay">
+    <div class="modal">
+      <h3>Alterar Senha</h3>
+
+      <label for="senhaAtual">Senha Atual</label>
+      <input type="password" id="senhaAtual" placeholder="Digite sua senha atual" />
+
+      <label for="novaSenha">Nova Senha</label>
+      <input type="password" id="novaSenha" placeholder="Digite a nova senha" />
+
+      <label for="confirmarSenha">Confirmar Nova Senha</label>
+      <input type="password" id="confirmarSenha" placeholder="Confirme a nova senha" />
+
+      <div class="botoes-modal">
+        <button id="cancelarSenha" class="btn-cancelar">Cancelar</button>
+        <button id="salvarSenha" class="btn-primario">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- ⚙️ SCRIPTS BASE -->
+  <!-- ===================================================== -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
+  <script type="module" src="js/portal.js"></script>
+
+  <script>
+    // Inicialização de ícones
+    lucide.createIcons();
+  </script>
+</body>
+</html>
