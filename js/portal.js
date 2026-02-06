@@ -1,6 +1,6 @@
 import { 
   db, auth, collection, getDocs, doc, setDoc, getDoc, addDoc, deleteDoc, signOut, 
-  onAuthStateChanged // Importamos o "porteiro" do Firebase
+  onAuthStateChanged 
 } from "./firebase.js";
 
 // --- VARIÁVEIS GLOBAIS ---
@@ -11,60 +11,69 @@ const ADMIN_EMAIL = "marcospauloserra@outlook.com.br";
 let isAdmin = false;
 
 // =====================================================
-// 🚀 INICIALIZAÇÃO SEGURA (AUTH GUARD)
+// 🚀 INICIALIZAÇÃO
 // =====================================================
 window.addEventListener("DOMContentLoaded", () => {
-  // O Porteiro: Verifica se tem alguém logado DE VERDADE
+  console.log("Iniciando Portal...");
+
+  // 1. Ativa botões globais IMEDIATAMENTE (para não travar o Sair)
+  configurarBotoesGlobais();
+
+  // 2. O Porteiro: Verifica autenticação
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // 1. Usuário está logado! Recuperar dados.
-      console.log("Usuário autenticado:", user.email);
+      console.log("Usuário logado:", user.email);
       userEmail = user.email;
       isAdmin = userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
-      // Tenta recuperar nome/grupo do LocalStorage ou busca no banco se sumiu
-      if (!localStorage.getItem("userName")) {
-        const snap = await getDoc(doc(db, "atletas", user.uid));
-        if (snap.exists()) {
-          const data = snap.data();
-          localStorage.setItem("userName", data.nome);
-          localStorage.setItem("userGroup", data.grupo);
-          localStorage.setItem("userEmail", data.email);
+      // Tenta recuperar dados (com proteção contra erros)
+      try {
+        if (!localStorage.getItem("userName")) {
+          console.log("Buscando dados no Firestore...");
+          const docRef = doc(db, "atletas", user.uid);
+          const snap = await getDoc(docRef);
+          
+          if (snap.exists()) {
+            const data = snap.data();
+            localStorage.setItem("userName", data.nome || "Atleta");
+            localStorage.setItem("userGroup", data.grupo || "atleta");
+            localStorage.setItem("userEmail", data.email || user.email);
+          } else {
+            console.warn("Perfil não encontrado no banco.");
+          }
         }
+      } catch (error) {
+        console.error("Erro crítico ao buscar perfil:", error);
+        // Não trava o site, usa valores padrão
       }
 
       // Atualiza variáveis da memória
       userName = localStorage.getItem("userName") || "Atleta";
       userGroup = localStorage.getItem("userGroup") || "atleta";
 
-      // 2. Inicia o Portal
-      setupUI();
-      setupNavigation();
-      setupModais();
-      
-      if (isAdmin) {
-        carregarListaAtletas();
-        carregarRegras();
+      // 3. Inicia a Interface
+      try {
+        setupUI();
+        setupNavigation();
+        setupModais();
+        
+        if (isAdmin) {
+          carregarListaAtletas();
+          carregarRegras();
+        }
+        
+        carregarEventos();
+        carregarDashboard();
+        await verificarCallbackStrava();
+        lucide.createIcons();
+      } catch (e) {
+        console.error("Erro ao desenhar tela:", e);
       }
-      
-      carregarEventos();
-      carregarDashboard();
-      await verificarCallbackStrava();
-      lucide.createIcons();
 
     } else {
-      // 3. Ninguém logado (Cache limpo ou logout) -> Manda pro Login
-      console.log("Sessão inválida. Redirecionando...");
+      console.log("Não autenticado. Redirecionando...");
       window.location.href = "index.html";
     }
-  });
-
-  // Botões Globais
-  document.getElementById("logoutBtn").addEventListener("click", () => {
-    signOut(auth).then(() => { 
-      localStorage.clear(); 
-      window.location.href = "index.html"; 
-    });
   });
 });
 
@@ -72,20 +81,49 @@ window.addEventListener("DOMContentLoaded", () => {
 // 🖥️ UI & VISUAL
 // =====================================================
 function setupUI() {
-  const primeiroNome = userName.split(" ")[0];
-  document.querySelector(".portal-nome").textContent = `Olá, ${primeiroNome}`;
+  const nomeSpan = document.querySelector(".portal-nome");
+  if (nomeSpan) {
+    const primeiroNome = userName.split(" ")[0];
+    nomeSpan.textContent = `Olá, ${primeiroNome}`;
+  }
   
+  const userSpan = document.getElementById("userName");
+  if(userSpan) userSpan.textContent = userName.split(" ")[0];
+
   const badge = document.getElementById("userGroupBadge");
   if(badge) {
     badge.textContent = isAdmin ? "Administrador" : userGroup.toUpperCase();
     badge.style.background = isAdmin ? "#e63946" : "rgba(255,255,255,0.2)";
   }
 
-  // Esconde/Mostra áreas de Admin
+  // Controle Admin
   if (!isAdmin) {
     document.querySelectorAll(".admin-only").forEach(el => el.remove());
   } else {
     configurarAdminStrava();
+  }
+}
+
+function configurarBotoesGlobais() {
+  const btnSair = document.getElementById("logoutBtn");
+  if (btnSair) {
+    btnSair.addEventListener("click", () => {
+      signOut(auth).then(() => { 
+        localStorage.clear(); 
+        window.location.href = "index.html"; 
+      });
+    });
+  }
+
+  const themeToggle = document.getElementById("theme-toggle");
+  if(themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      const body = document.body;
+      const isDark = body.getAttribute("data-theme") === "dark";
+      body.setAttribute("data-theme", isDark ? "light" : "dark");
+      themeToggle.innerHTML = isDark ? '<i data-lucide="moon"></i>' : '<i data-lucide="sun"></i>';
+      lucide.createIcons();
+    });
   }
 }
 
@@ -125,11 +163,8 @@ async function carregarListaAtletas() {
     
     document.querySelectorAll(".btn-excluir").forEach(btn => {
       btn.addEventListener("click", async (e) => {
-        if(confirm("ATENÇÃO: Deseja excluir este atleta permanentemente?")) {
-          // Nota: Isso apaga do banco de dados, mas o login (Auth) continua existindo 
-          // até ser removido no painel do Firebase Console.
-          const id = e.currentTarget.dataset.id;
-          await deleteDoc(doc(db, "atletas", id));
+        if(confirm("Deseja excluir este atleta?")) {
+          await deleteDoc(doc(db, "atletas", e.currentTarget.dataset.id));
           carregarListaAtletas();
         }
       });
@@ -138,7 +173,7 @@ async function carregarListaAtletas() {
 
   } catch(e) {
     console.error(e);
-    tbody.innerHTML = "<tr><td colspan='4' style="color:red">Erro de permissão ou conexão.</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='4' style='color:red'>Erro ao carregar lista.</td></tr>";
   }
 }
 
@@ -153,17 +188,16 @@ async function carregarEventos() {
   lista.innerHTML = "";
   
   if(snap.empty) {
-    lista.innerHTML = `<div class="card"><p style="font-weight:400; font-size:1rem;">Nenhum evento próximo.</p></div>`;
+    lista.innerHTML = `<div class="card"><p style="font-weight:400; font-size:1rem;">Nenhum evento.</p></div>`;
     return;
   }
 
   snap.forEach(d => {
     const ev = d.data();
-    const dataF = ev.data ? new Date(ev.data).toLocaleDateString('pt-BR') : 'Data indef.';
+    const dataF = ev.data ? new Date(ev.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : 'Data indef.';
     
     const card = document.createElement("div");
     card.className = "card";
-    // Corzinha na lateral pra indicar tipo
     const corBorda = ev.tipo === 'Prova' ? '#e63946' : '#00b37e'; 
     
     card.style.borderLeft = `4px solid ${corBorda}`;
@@ -212,8 +246,8 @@ if(btnSalvarEvento) {
       await addDoc(collection(db, "eventos"), { titulo, data, hora, tipo, km, criadoEm: new Date().toISOString() });
       document.getElementById("modalEvento").style.display = "none";
       carregarEventos();
-      document.getElementById("eventoTitulo").value = ""; // Limpa
-    } catch(e) { alert("Erro ao salvar."); }
+      document.getElementById("eventoTitulo").value = ""; 
+    } catch(e) { alert("Erro ao salvar: " + e.message); }
     btnSalvarEvento.textContent = "Criar Evento";
   });
 }
@@ -349,7 +383,7 @@ function setupNavigation() {
   });
 }
 
-// STRAVA E AUXILIARES (Resumido para manter funcionalidade)
+// STRAVA E AUXILIARES
 async function buscarDadosStrava(token) {
   const r = await fetch("https://www.strava.com/api/v3/athlete/activities?per_page=30", { headers: { "Authorization": `Bearer ${token}` }});
   if(!r.ok) throw new Error(r.status);
