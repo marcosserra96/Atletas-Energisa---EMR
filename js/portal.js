@@ -1,178 +1,213 @@
 import { db } from "./firebase.js";
 import {
-  collection, getDocs, addDoc, doc, setDoc, getDoc, query, where
+  collection, getDocs, doc, setDoc, getDoc
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// =====================================================
-// 🔐 Controle de Acesso e Permissões
-// =====================================================
-const userGroup = localStorage.getItem("userGroup")?.toLowerCase() || "atleta";
-const userName = localStorage.getItem("userName") || "Atleta";
+// --- VARIÁVEIS GLOBAIS DE ESTADO ---
+const userEmail = localStorage.getItem("userEmail") || "";
+const userName = localStorage.getItem("userName") || "Usuário";
+// REGRA: Apenas este e-mail é admin. Todos os outros (incluindo 'comite') são visualizadores.
+const ADMIN_EMAIL = "marcospauloserra@outlook.com.br";
+const isAdmin = userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
-function aplicarPermissoes() {
-  const isComite = userGroup === "comite" || userGroup === "comitê";
+// =====================================================
+// 🚀 INICIALIZAÇÃO
+// =====================================================
+window.addEventListener("DOMContentLoaded", () => {
+  // 1. Configurar Interface Base
+  configurarTopo();
   
-  // Atualiza badge no topo
-  document.getElementById("userName").textContent = userName;
-  document.getElementById("userGroupBadge").textContent = isComite ? "Admin" : "Atleta";
+  // 2. Aplicar Permissões (Esconde/Mostra coisas)
+  aplicarPermissoes();
 
-  // Se NÃO for comitê, esconde coisas de admin
-  if (!isComite) {
+  // 3. Ativar Navegação (Menu)
+  inicializarNavegacao();
+
+  // 4. Carregar Dados Iniciais
+  carregarDashboard();
+
+  // 5. Configurar Botões de Ação (Sair, Salvar, etc)
+  configurarBotoesGlobais();
+
+  // 6. Recriar ícones
+  lucide.createIcons();
+});
+
+// =====================================================
+// 🔐 CONTROLE DE ACESSO
+// =====================================================
+function aplicarPermissoes() {
+  // Se NÃO for o admin específico, remove elementos de gestão
+  if (!isAdmin) {
     document.querySelectorAll(".admin-only").forEach(el => {
-      el.style.display = "none"; // Remove visualmente
+      el.remove(); // Remove do DOM para evitar cliques acidentais
     });
     
-    // Se estiver numa seção proibida, chuta pro início
-    const secaoAtual = document.querySelector(".active-section")?.id;
-    if (["atletas", "criterios"].includes(secaoAtual)) {
-       navegarPara("inicio");
+    // Redireciona se estiver numa aba proibida (ex: atualizou a página na aba errada)
+    const secaoAtual = document.querySelector("section.active-section");
+    if (secaoAtual && (secaoAtual.id === "atletas" || secaoAtual.id === "criterios")) {
+      navegarPara("inicio");
     }
   } else {
-    // Se for admin, carrega as configs do Strava
-    carregarConfigStravaAdmin();
+    // Se FOR admin, carrega configurações sensíveis
+    carregarConfigStrava();
   }
 }
 
-function navegarPara(secaoId) {
-  document.querySelectorAll(".menu-item").forEach(i => i.classList.remove("active"));
-  document.querySelector(`[data-section="${secaoId}"]`)?.classList.add("active");
-  
-  document.querySelectorAll("main section").forEach(s => s.classList.remove("active-section"));
-  document.getElementById(secaoId)?.classList.add("active-section");
+function configurarTopo() {
+  document.getElementById("userName").textContent = userName;
+  const badge = document.getElementById("userGroupBadge");
+  if (badge) {
+    badge.textContent = isAdmin ? "Administrador" : "Atleta";
+    badge.style.background = isAdmin ? "#e63946" : "rgba(255,255,255,0.2)"; // Vermelho para Admin
+  }
 }
 
 // =====================================================
-// 📊 Dashboard Inteligente (Admin vs Atleta)
+// 🧭 NAVEGAÇÃO
+// =====================================================
+function inicializarNavegacao() {
+  const menuItems = document.querySelectorAll(".menu-item");
+  
+  menuItems.forEach(item => {
+    item.addEventListener("click", () => {
+      const targetId = item.getAttribute("data-section");
+      navegarPara(targetId);
+    });
+  });
+}
+
+function navegarPara(secaoId) {
+  // 1. Atualiza Menu
+  document.querySelectorAll(".menu-item").forEach(i => i.classList.remove("active"));
+  const menuItem = document.querySelector(`.menu-item[data-section="${secaoId}"]`);
+  if (menuItem) menuItem.classList.add("active");
+
+  // 2. Atualiza Seção Principal
+  document.querySelectorAll("main section").forEach(s => {
+    s.classList.remove("active-section");
+    s.style.display = "none"; // Garante que suma
+  });
+  
+  const secaoAlvo = document.getElementById(secaoId);
+  if (secaoAlvo) {
+    secaoAlvo.style.display = "block";
+    // Pequeno delay para animação CSS funcionar (se houver fade-in)
+    setTimeout(() => secaoAlvo.classList.add("active-section"), 10);
+  }
+
+  // 3. Ícones precisam ser recarregados em algumas trocas
+  lucide.createIcons();
+}
+
+// =====================================================
+// 📊 DASHBOARD
 // =====================================================
 async function carregarDashboard() {
-  const isComite = userGroup === "comite" || userGroup === "comitê";
   const container = document.getElementById("dashboardCards");
   const titulo = document.getElementById("tituloDashboard");
   
-  container.innerHTML = '<p style="grid-column:span 3; text-align:center">Carregando dados...</p>';
+  if (!container) return;
 
-  if (isComite) {
-    // --- VISÃO ADMIN (Visão do Todo) ---
-    titulo.textContent = "Visão Geral do Comitê";
-    const atletasSnap = await getDocs(collection(db, "atletas"));
-    const eventosSnap = await getDocs(collection(db, "eventos"));
+  if (isAdmin) {
+    // --- PAINEL DO ADMINISTRADOR ---
+    titulo.textContent = "Painel de Controle";
     
-    container.innerHTML = `
-      <div class="card">
-        <i data-lucide="users"></i>
-        <h3>Total Atletas</h3>
-        <p>${atletasSnap.size}</p>
-      </div>
-      <div class="card">
-        <i data-lucide="calendar-check"></i>
-        <h3>Eventos Realizados</h3>
-        <p>${eventosSnap.size}</p>
-      </div>
-      <div class="card">
-        <i data-lucide="trending-up"></i>
-        <h3>Média de Pontos</h3>
-        <p>125</p> </div>
-    `;
+    // Buscando contagens reais (Exemplo simplificado)
+    try {
+      const usersSnap = await getDocs(collection(db, "atletas"));
+      const eventsSnap = await getDocs(collection(db, "eventos"));
+      
+      container.innerHTML = `
+        <div class="card">
+          <i data-lucide="users"></i>
+          <h3>Atletas Cadastrados</h3>
+          <p>${usersSnap.size}</p>
+        </div>
+        <div class="card">
+          <i data-lucide="calendar"></i>
+          <h3>Eventos Criados</h3>
+          <p>${eventsSnap.size}</p>
+        </div>
+        <div class="card">
+           <i data-lucide="settings"></i>
+           <h3>Configuração</h3>
+           <p style="font-size:1rem">API Strava</p>
+        </div>
+      `;
+    } catch (e) {
+      container.innerHTML = "<p>Erro ao carregar dados.</p>";
+    }
+
   } else {
-    // --- VISÃO ATLETA (Meu Mundo) ---
-    titulo.textContent = `Olá, ${userName}!`;
-    
-    // Aqui buscaríamos os dados REAIS do atleta no Firebase
-    // Simulando dados para visualização imediata:
+    // --- PAINEL DO ATLETA ---
+    titulo.textContent = `Olá, ${userName.split(" ")[0]}!`;
     container.innerHTML = `
       <div class="card">
         <i data-lucide="trophy" style="color:#f37021"></i>
         <h3>Minha Pontuação</h3>
-        <p style="color:#f37021">850 pts</p>
-      </div>
-      <div class="card">
-        <i data-lucide="map-pin"></i>
-        <h3>Presença</h3>
-        <p>12 Eventos</p>
+        <p style="color:#f37021">0</p>
       </div>
       <div class="card">
         <i data-lucide="activity"></i>
-        <h3>Último Treino</h3>
-        <p style="font-size:1rem; margin-top:5px;">Ontem, 18:30</p>
+        <h3>Atividades</h3>
+        <p>0</p>
       </div>
     `;
   }
   lucide.createIcons();
-  carregarRanking(); // Função separada para limpar o código
 }
 
 // =====================================================
-// ⚙️ Configuração Strava (Admin)
+// ⚙️ CONFIGURAÇÕES & BOTÕES
 // =====================================================
-async function carregarConfigStravaAdmin() {
+function configurarBotoesGlobais() {
+  // LOGOUT
+  const btnSair = document.getElementById("logoutBtn");
+  if (btnSair) {
+    btnSair.addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "index.html";
+    });
+  }
+
+  // SALVAR STRAVA (Só funciona se o elemento existir, ou seja, se for Admin)
+  const btnSalvarStrava = document.getElementById("btnSalvarConfigStrava");
+  if (btnSalvarStrava) {
+    btnSalvarStrava.addEventListener("click", async () => {
+      const clientId = document.getElementById("stravaClientId").value;
+      const clientSecret = document.getElementById("stravaClientSecret").value;
+
+      if (!clientId || !clientSecret) return alert("Preencha os campos!");
+
+      await setDoc(doc(db, "config_sistema", "strava"), {
+        client_id: clientId,
+        client_secret: clientSecret
+      });
+      alert("Configurações salvas!");
+    });
+  }
+  
+  // CONECTAR STRAVA (Atleta)
+  const btnConnect = document.getElementById("btnConnectStrava");
+  if (btnConnect) {
+    btnConnect.addEventListener("click", () => {
+      alert("Redirecionando para Strava... (Implementar lógica de redirecionamento)");
+    });
+  }
+}
+
+async function carregarConfigStrava() {
   try {
     const docSnap = await getDoc(doc(db, "config_sistema", "strava"));
     if (docSnap.exists()) {
       const data = docSnap.data();
-      document.getElementById("stravaClientId").value = data.client_id || "";
-      // Não preenchemos o secret por segurança visual, ou apenas placeholder
+      const inputId = document.getElementById("stravaClientId");
+      const inputSecret = document.getElementById("stravaClientSecret");
+      if (inputId) inputId.value = data.client_id || "";
+      if (inputSecret) inputSecret.value = data.client_secret || "";
     }
-  } catch (e) { console.log("Sem permissão para ler configs sensíveis"); }
-}
-
-const btnSalvarConfig = document.getElementById("btnSalvarConfigStrava");
-if (btnSalvarConfig) {
-  btnSalvarConfig.addEventListener("click", async () => {
-    const clientId = document.getElementById("stravaClientId").value;
-    const clientSecret = document.getElementById("stravaClientSecret").value;
-    
-    if(!clientId || !clientSecret) return alert("Preencha todos os campos");
-
-    await setDoc(doc(db, "config_sistema", "strava"), {
-      client_id: clientId,
-      client_secret: clientSecret
-    });
-    alert("Configurações salvas com segurança!");
-  });
-}
-
-// =====================================================
-// 🚴 Conexão Strava (Atleta)
-// =====================================================
-document.getElementById("btnConnectStrava").addEventListener("click", async () => {
-  // 1. Busca o Client ID público no banco (se permitido) ou usa um fixo
-  // Ideal: Ler do Firestore. Fallback: hardcoded para teste
-  let clientId = "SEU_CLIENT_ID_AQUI"; 
-  
-  try {
-     // Tenta ler do banco se tiver permissão de leitura pública no client_id
-     // const snap = await getDoc(doc(db, "config_sistema", "strava_public")); 
-     // clientId = snap.data().client_id;
-  } catch(e) {}
-
-  const redirectUri = window.location.href.split('?')[0]; // URL atual limpa
-  const scope = "activity:read_all";
-  window.location.href = `http://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&approval_prompt=force&scope=${scope}`;
-});
-
-// Verifica retorno do Strava ao carregar
-function verificarRetornoStrava() {
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get("code");
-  if (code) {
-    // Aqui você enviaria esse 'code' para seu Backend/Firebase Function
-    // Para trocar pelo Token seguro.
-    console.log("Código Strava recebido:", code);
-    alert("Código recebido! Integração backend pendente.");
-    window.history.replaceState({}, document.title, window.location.pathname);
+  } catch (e) {
+    console.log("Erro ao carregar configs:", e);
   }
 }
-
-// =====================================================
-// 🚀 Inicialização
-// =====================================================
-window.addEventListener("DOMContentLoaded", () => {
-  aplicarPermissoes();
-  carregarDashboard();
-  verificarRetornoStrava();
-  
-  // Inicializar outros módulos (Eventos, Calendário, etc - código anterior mantido)
-  // ...
-});
-
-// ... [Restante das funções de Eventos e FullCalendar mantidas do original] ...
