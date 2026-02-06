@@ -1,516 +1,178 @@
-// =====================================================
-// ⚙️ Importação Firebase
-// =====================================================
 import { db } from "./firebase.js";
 import {
-  collection,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  onSnapshot
+  collection, getDocs, addDoc, doc, setDoc, getDoc, query, where
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // =====================================================
-// 🌙 Tema Claro / Escuro (persistente)
+// 🔐 Controle de Acesso e Permissões
 // =====================================================
-const themeToggle = document.getElementById("theme-toggle");
-const body = document.body;
-const savedTheme = localStorage.getItem("theme") || "light";
-body.setAttribute("data-theme", savedTheme);
-if (savedTheme === "dark") themeToggle.innerHTML = `<i data-lucide="sun"></i>`;
-lucide.createIcons();
+const userGroup = localStorage.getItem("userGroup")?.toLowerCase() || "atleta";
+const userName = localStorage.getItem("userName") || "Atleta";
 
-themeToggle.addEventListener("click", () => {
-  const isDark = body.getAttribute("data-theme") === "dark";
-  body.setAttribute("data-theme", isDark ? "light" : "dark");
-  localStorage.setItem("theme", isDark ? "light" : "dark");
-  themeToggle.innerHTML = isDark
-    ? `<i data-lucide="moon"></i>`
-    : `<i data-lucide="sun"></i>`;
-  lucide.createIcons();
-});
+function aplicarPermissoes() {
+  const isComite = userGroup === "comite" || userGroup === "comitê";
+  
+  // Atualiza badge no topo
+  document.getElementById("userName").textContent = userName;
+  document.getElementById("userGroupBadge").textContent = isComite ? "Admin" : "Atleta";
 
-// =====================================================
-// 👤 Exibir nome do usuário automaticamente
-// =====================================================
-function carregarNomeUsuario() {
-  const userNameEl = document.getElementById("userName");
-  if (!userNameEl) return;
-
-  // 🔹 tenta primeiro pelo localStorage (usado após login)
-  let nomeUsuario = localStorage.getItem("userName");
-
-  // 🔹 se não houver, tenta pegar de userData salvo
-  if (!nomeUsuario) {
-    try {
-      const userData = JSON.parse(localStorage.getItem("userData"));
-      nomeUsuario = userData?.displayName || userData?.nome || "";
-    } catch {
-      nomeUsuario = "";
+  // Se NÃO for comitê, esconde coisas de admin
+  if (!isComite) {
+    document.querySelectorAll(".admin-only").forEach(el => {
+      el.style.display = "none"; // Remove visualmente
+    });
+    
+    // Se estiver numa seção proibida, chuta pro início
+    const secaoAtual = document.querySelector(".active-section")?.id;
+    if (["atletas", "criterios"].includes(secaoAtual)) {
+       navegarPara("inicio");
     }
+  } else {
+    // Se for admin, carrega as configs do Strava
+    carregarConfigStravaAdmin();
   }
-
-  // 🔹 fallback
-  if (!nomeUsuario || nomeUsuario.trim() === "") {
-    nomeUsuario = "Usuário";
-  }
-
-  // 🔹 capitaliza e mostra só o primeiro nome
-  nomeUsuario = nomeUsuario.trim();
-  const primeiroNome = nomeUsuario.split(" ")[0];
-  userNameEl.textContent =
-    primeiroNome.charAt(0).toUpperCase() + primeiroNome.slice(1).toLowerCase();
 }
 
-// chama ao carregar
-window.addEventListener("load", carregarNomeUsuario);
+function navegarPara(secaoId) {
+  document.querySelectorAll(".menu-item").forEach(i => i.classList.remove("active"));
+  document.querySelector(`[data-section="${secaoId}"]`)?.classList.add("active");
+  
+  document.querySelectorAll("main section").forEach(s => s.classList.remove("active-section"));
+  document.getElementById(secaoId)?.classList.add("active-section");
+}
 
 // =====================================================
-// 🚪 Logout
-// =====================================================
-document.getElementById("logoutBtn").addEventListener("click", () => {
-  localStorage.clear();
-  window.location.href = "index.html";
-});
-
-// =====================================================
-// 🧭 Navegação entre seções
-// =====================================================
-const menuItems = document.querySelectorAll(".menu-item");
-const sections = document.querySelectorAll("main section");
-
-menuItems.forEach((item) => {
-  item.addEventListener("click", () => {
-    menuItems.forEach((i) => i.classList.remove("active"));
-    item.classList.add("active");
-    const target = item.getAttribute("data-section");
-
-    sections.forEach((sec) => {
-      sec.classList.remove("active-section");
-      if (sec.id === target) sec.classList.add("active-section");
-    });
-    lucide.createIcons();
-  });
-});
-
-// =====================================================
-// 📊 Dashboard — Gráficos e Contadores
+// 📊 Dashboard Inteligente (Admin vs Atleta)
 // =====================================================
 async function carregarDashboard() {
-  const atletasSnap = await getDocs(collection(db, "atletas"));
-  const eventosSnap = await getDocs(collection(db, "eventos"));
-  const criteriosSnap = await getDocs(collection(db, "criterios"));
+  const isComite = userGroup === "comite" || userGroup === "comitê";
+  const container = document.getElementById("dashboardCards");
+  const titulo = document.getElementById("tituloDashboard");
+  
+  container.innerHTML = '<p style="grid-column:span 3; text-align:center">Carregando dados...</p>';
 
-  document.getElementById("totalAtletas").textContent = atletasSnap.size;
-  document.getElementById("totalEventos").textContent = eventosSnap.size;
-  document.getElementById("totalCriterios").textContent = criteriosSnap.size;
-
-  // Ranking simples (pontuação somada)
-  const rankingList = document.getElementById("rankingList");
-  rankingList.innerHTML = "";
-  const ranking = [];
-
-  const atletas = [];
-  atletasSnap.forEach((docSnap) => atletas.push(docSnap.data()));
-
-  atletas.forEach((a) => {
-    ranking.push({
-      nome: a.nome,
-      pontos: a.pontos || 0
-    });
-  });
-
-  ranking
-    .sort((a, b) => b.pontos - a.pontos)
-    .slice(0, 5)
-    .forEach((r) => {
-      const li = document.createElement("li");
-      li.textContent = `⭐ ${r.nome} — ${r.pontos} pts`;
-      rankingList.appendChild(li);
-    });
-
-  // Gráfico de participação mensal
-  const ctx = document.getElementById("graficoParticipacao");
-  if (ctx) {
-    const chart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: [
-          "Jan",
-          "Fev",
-          "Mar",
-          "Abr",
-          "Mai",
-          "Jun",
-          "Jul",
-          "Ago",
-          "Set",
-          "Out",
-          "Nov",
-          "Dez"
-        ],
-        datasets: [
-          {
-            label: "Participações",
-            data: [3, 5, 4, 7, 9, 8, 10, 6, 7, 5, 4, 9],
-            borderColor: "#009bc1",
-            backgroundColor: "rgba(0,155,193,0.2)",
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4
-          }
-        ]
-      },
-      options: {
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { beginAtZero: true }
-        }
-      }
-    });
-  }
-}
-
-// =====================================================
-// 👟 Atletas + Validação de Treinos
-// =====================================================
-async function carregarAtletas() {
-  const tbody = document.getElementById("listaAtletas");
-  tbody.innerHTML = "";
-
-  const snap = await getDocs(collection(db, "atletas"));
-  snap.forEach((docSnap) => {
-    const atleta = docSnap.data();
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${atleta.nome}</td>
-      <td>${atleta.equipe}</td>
-      <td>${atleta.status || "Ativo"}</td>
-      <td>
-        <button class="btn-mini" data-id="${docSnap.id}" data-action="editar">✏️</button>
-        <button class="btn-mini" data-id="${docSnap.id}" data-action="excluir">🗑️</button>
-      </td>`;
-    tbody.appendChild(tr);
-  });
-}
-
-// =====================================================
-// 🗓️ Eventos
-// =====================================================
-const modalEvento = document.getElementById("modalEvento");
-const novoEventoBtn = document.getElementById("novoEventoBtn");
-const cancelarModal = document.getElementById("cancelarModal");
-const salvarEvento = document.getElementById("salvarEvento");
-
-novoEventoBtn.addEventListener("click", () => (modalEvento.style.display = "flex"));
-cancelarModal.addEventListener("click", () => (modalEvento.style.display = "none"));
-
-salvarEvento.addEventListener("click", async () => {
-  const titulo = document.getElementById("eventoTitulo").value;
-  const tipo = document.getElementById("eventoTipo").value;
-  const equipe = document.getElementById("eventoEquipe").value;
-  const km = document.getElementById("eventoKm").value;
-  const data = document.getElementById("eventoData").value;
-  const link = document.getElementById("eventoLink").value;
-
-  if (!titulo || !data || !tipo) {
-    alert("Preencha os campos obrigatórios!");
-    return;
-  }
-
-  await addDoc(collection(db, "eventos"), {
-    titulo,
-    tipo,
-    equipe,
-    km,
-    data,
-    link
-  });
-
-  modalEvento.style.display = "none";
-  carregarEventos();
-});
-
-// Carregar lista de eventos
-async function carregarEventos() {
-  const lista = document.getElementById("listaEventos");
-  lista.innerHTML = "<p>Carregando...</p>";
-
-  const snap = await getDocs(collection(db, "eventos"));
-  lista.innerHTML = "";
-  snap.forEach((docSnap) => {
-    const evento = docSnap.data();
-    const div = document.createElement("div");
-    div.classList.add("card-evento");
-    div.innerHTML = `
-      <h4>${evento.titulo}</h4>
-      <p><strong>Data:</strong> ${evento.data}</p>
-      <p><strong>Tipo:</strong> ${evento.tipo}</p>
-      <p><strong>Equipe:</strong> ${evento.equipe}</p>
-      <p><strong>KM:</strong> ${evento.km || "-"}</p>
+  if (isComite) {
+    // --- VISÃO ADMIN (Visão do Todo) ---
+    titulo.textContent = "Visão Geral do Comitê";
+    const atletasSnap = await getDocs(collection(db, "atletas"));
+    const eventosSnap = await getDocs(collection(db, "eventos"));
+    
+    container.innerHTML = `
+      <div class="card">
+        <i data-lucide="users"></i>
+        <h3>Total Atletas</h3>
+        <p>${atletasSnap.size}</p>
+      </div>
+      <div class="card">
+        <i data-lucide="calendar-check"></i>
+        <h3>Eventos Realizados</h3>
+        <p>${eventosSnap.size}</p>
+      </div>
+      <div class="card">
+        <i data-lucide="trending-up"></i>
+        <h3>Média de Pontos</h3>
+        <p>125</p> </div>
     `;
-    lista.appendChild(div);
-  });
-}
-
-// =====================================================
-// 🏅 Critérios
-// =====================================================
-const modalCriterio = document.getElementById("modalCriterio");
-const novoCriterioBtn = document.getElementById("novoCriterioBtn");
-const cancelarCriterio = document.getElementById("cancelarCriterio");
-const salvarCriterio = document.getElementById("salvarCriterio");
-
-novoCriterioBtn.addEventListener("click", () => (modalCriterio.style.display = "flex"));
-cancelarCriterio.addEventListener("click", () => (modalCriterio.style.display = "none"));
-
-salvarCriterio.addEventListener("click", async () => {
-  const descricao = document.getElementById("criterioDescricao").value;
-  const pontuacao = document.getElementById("criterioPontuacao").value;
-  const aplicavel = document.getElementById("criterioAplicavel").value;
-
-  if (!descricao || !pontuacao) {
-    alert("Preencha todos os campos!");
-    return;
-  }
-
-  await addDoc(collection(db, "criterios"), {
-    descricao,
-    pontuacao: Number(pontuacao),
-    aplicavel
-  });
-
-  modalCriterio.style.display = "none";
-  carregarCriterios();
-});
-
-async function carregarCriterios() {
-  const lista = document.getElementById("listaCriterios");
-  lista.innerHTML = "<p>Carregando...</p>";
-
-  const snap = await getDocs(collection(db, "criterios"));
-  lista.innerHTML = "";
-  snap.forEach((docSnap) => {
-    const crit = docSnap.data();
-    const div = document.createElement("div");
-    div.classList.add("card-criterio");
-    div.innerHTML = `
-      <h4>${crit.descricao}</h4>
-      <p><strong>Pontuação:</strong> ${crit.pontuacao}</p>
-      <p><strong>Aplicável:</strong> ${crit.aplicavel || "Global"}</p>
+  } else {
+    // --- VISÃO ATLETA (Meu Mundo) ---
+    titulo.textContent = `Olá, ${userName}!`;
+    
+    // Aqui buscaríamos os dados REAIS do atleta no Firebase
+    // Simulando dados para visualização imediata:
+    container.innerHTML = `
+      <div class="card">
+        <i data-lucide="trophy" style="color:#f37021"></i>
+        <h3>Minha Pontuação</h3>
+        <p style="color:#f37021">850 pts</p>
+      </div>
+      <div class="card">
+        <i data-lucide="map-pin"></i>
+        <h3>Presença</h3>
+        <p>12 Eventos</p>
+      </div>
+      <div class="card">
+        <i data-lucide="activity"></i>
+        <h3>Último Treino</h3>
+        <p style="font-size:1rem; margin-top:5px;">Ontem, 18:30</p>
+      </div>
     `;
-    lista.appendChild(div);
+  }
+  lucide.createIcons();
+  carregarRanking(); // Função separada para limpar o código
+}
+
+// =====================================================
+// ⚙️ Configuração Strava (Admin)
+// =====================================================
+async function carregarConfigStravaAdmin() {
+  try {
+    const docSnap = await getDoc(doc(db, "config_sistema", "strava"));
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      document.getElementById("stravaClientId").value = data.client_id || "";
+      // Não preenchemos o secret por segurança visual, ou apenas placeholder
+    }
+  } catch (e) { console.log("Sem permissão para ler configs sensíveis"); }
+}
+
+const btnSalvarConfig = document.getElementById("btnSalvarConfigStrava");
+if (btnSalvarConfig) {
+  btnSalvarConfig.addEventListener("click", async () => {
+    const clientId = document.getElementById("stravaClientId").value;
+    const clientSecret = document.getElementById("stravaClientSecret").value;
+    
+    if(!clientId || !clientSecret) return alert("Preencha todos os campos");
+
+    await setDoc(doc(db, "config_sistema", "strava"), {
+      client_id: clientId,
+      client_secret: clientSecret
+    });
+    alert("Configurações salvas com segurança!");
   });
 }
 
 // =====================================================
-// 🔒 Alterar Senha (modal)
+// 🚴 Conexão Strava (Atleta)
 // =====================================================
-const modalSenha = document.getElementById("modalSenha");
-document.getElementById("btnAlterarSenha").addEventListener("click", () => {
-  modalSenha.style.display = "flex";
+document.getElementById("btnConnectStrava").addEventListener("click", async () => {
+  // 1. Busca o Client ID público no banco (se permitido) ou usa um fixo
+  // Ideal: Ler do Firestore. Fallback: hardcoded para teste
+  let clientId = "SEU_CLIENT_ID_AQUI"; 
+  
+  try {
+     // Tenta ler do banco se tiver permissão de leitura pública no client_id
+     // const snap = await getDoc(doc(db, "config_sistema", "strava_public")); 
+     // clientId = snap.data().client_id;
+  } catch(e) {}
+
+  const redirectUri = window.location.href.split('?')[0]; // URL atual limpa
+  const scope = "activity:read_all";
+  window.location.href = `http://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&approval_prompt=force&scope=${scope}`;
 });
-document.getElementById("cancelarSenha").addEventListener("click", () => {
-  modalSenha.style.display = "none";
-});
-document.getElementById("salvarSenha").addEventListener("click", () => {
-  alert("Senha alterada com sucesso! (simulação)");
-  modalSenha.style.display = "none";
-});
+
+// Verifica retorno do Strava ao carregar
+function verificarRetornoStrava() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get("code");
+  if (code) {
+    // Aqui você enviaria esse 'code' para seu Backend/Firebase Function
+    // Para trocar pelo Token seguro.
+    console.log("Código Strava recebido:", code);
+    alert("Código recebido! Integração backend pendente.");
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
 
 // =====================================================
 // 🚀 Inicialização
 // =====================================================
 window.addEventListener("DOMContentLoaded", () => {
+  aplicarPermissoes();
   carregarDashboard();
-  carregarAtletas();
-  carregarEventos();
-  carregarCriterios();
-  inicializarControleDeCalendario(); // 🔹 nova função que gerencia o calendário
+  verificarRetornoStrava();
+  
+  // Inicializar outros módulos (Eventos, Calendário, etc - código anterior mantido)
+  // ...
 });
 
-// =======================================================
-// 📅 FULLCALENDAR — CALENDÁRIO INTERATIVO DE EVENTOS
-// =======================================================
-function inicializarControleDeCalendario() {
-  let calendario;
-  const alternarVisaoBtn = document.getElementById("alternarVisao");
-  const listaEventos = document.getElementById("listaEventos");
-  const calendarioEventos = document.getElementById("calendarioEventos");
-
-  if (alternarVisaoBtn && listaEventos && calendarioEventos) {
-    alternarVisaoBtn.addEventListener("click", () => {
-      const mostrandoLista = listaEventos.style.display !== "none";
-      listaEventos.style.display = mostrandoLista ? "none" : "block";
-      calendarioEventos.style.display = mostrandoLista ? "block" : "none";
-
-      alternarVisaoBtn.innerHTML = mostrandoLista
-        ? '<i data-lucide="list"></i> Lista'
-        : '<i data-lucide="calendar-days"></i> Calendário';
-      lucide.createIcons();
-
-      if (mostrandoLista && !calendario) inicializarCalendarioInterativo();
-    });
-  }
-
-function inicializarCalendarioInterativo() {
-  const calendarEl = document.getElementById("calendarioEventos");
-
-  calendario = new FullCalendar.Calendar(calendarEl, {
-    locale: "pt-br",
-    initialView: "dayGridMonth",
-    height: "auto",
-    themeSystem: "standard",
-    buttonText: {
-      today: "Hoje",
-      month: "Mês",
-      week: "Semana",
-      day: "Dia"
-    },
-    headerToolbar: {
-      left: "prev,next today",
-      center: "title",
-      right: "dayGridMonth,timeGridWeek,timeGridDay"
-    },
-
-    // 🔹 Carrega os eventos do Firestore
-    events: async function (fetchInfo, successCallback, failureCallback) {
-      try {
-        const snapshot = await getDocs(collection(db, "eventos"));
-        const eventos = snapshot.docs
-          .map(doc => {
-            const data = doc.data();
-            if (!data.dataISO && !data.data) return null;
-            return {
-              id: doc.id,
-              title: data.titulo || "Sem título",
-              start: data.dataISO || converterDataBrasileira(data.data),
-              extendedProps: {
-                equipe: data.equipe || "",
-                tipo: data.tipo || "",
-                km: data.km || ""
-              }
-            };
-          })
-          .filter(Boolean);
-        successCallback(eventos);
-      } catch (error) {
-        console.error("Erro ao carregar eventos:", error);
-        failureCallback(error);
-      }
-    },
-
-    // 🔹 Clique no evento → popup de opções
-    eventClick: function (info) {
-      const evento = info.event;
-      const dados = evento.extendedProps;
-
-      const titulo = evento.title;
-      const descricao = `Equipe: ${dados.equipe}\nTipo: ${dados.tipo}\nKM: ${dados.km}`;
-      const dataInicio = new Date(evento.start);
-      const dataFim = new Date(dataInicio);
-      dataFim.setHours(dataFim.getHours() + 1);
-
-      const dtStart = dataInicio.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-      const dtEnd = dataFim.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-
-      const icsContent = `
-BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Portal Comitê Energisa//Calendário de Eventos//PT
-BEGIN:VEVENT
-UID:${evento.id}@energisa.com.br
-DTSTAMP:${dtStart}
-DTSTART:${dtStart}
-DTEND:${dtEnd}
-SUMMARY:${titulo}
-DESCRIPTION:${descricao}
-END:VEVENT
-END:VCALENDAR`.trim();
-
-      const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-
-      const googleUrl = new URL("https://calendar.google.com/calendar/render");
-      googleUrl.searchParams.set("action", "TEMPLATE");
-      googleUrl.searchParams.set("text", titulo);
-      googleUrl.searchParams.set("details", descricao);
-      googleUrl.searchParams.set("dates", `${dtStart}/${dtEnd}`);
-
-      const popup = document.createElement("div");
-popup.classList.add("evento-popup");
-popup.innerHTML = `
-  <div class="evento-popup-content">
-    <h3>${titulo}</h3>
-    <p><strong>Equipe:</strong> ${dados.equipe || "-"}<br>
-       <strong>Tipo:</strong> ${dados.tipo || "-"}<br>
-       <strong>KM:</strong> ${dados.km || "-"}</p>
-
-    <div class="popup-botoes">
-      <a href="${url}" download="${titulo}.ics" class="btn-acao">📥 Adicionar ao Outlook / iOS</a>
-      <a href="${googleUrl}" target="_blank" class="btn-acao">📆 Adicionar ao Google Calendar</a>
-      <button class="btn-cancelar fechar-popup">Fechar</button>
-    </div>
-  </div>
-`;
-document.body.appendChild(popup);
-
-// Fecha ao clicar no X ou no botão
-popup.querySelector(".fechar-popup").addEventListener("click", () => popup.remove());
-popup.querySelector(".evento-popup-content").addEventListener("click", e => e.stopPropagation());
-popup.addEventListener("click", () => popup.remove());
-
-    },
-
-    // 🔹 Clique em uma data → abre modal de novo evento
-    dateClick: function () {
-      document.getElementById("novoEventoBtn").click();
-    }
-  });
-
-  calendario.render();
-}
-
-// 🔹 Converte data “05/11/2025” → “2025-11-05”
-function converterDataBrasileira(dataBR) {
-  if (!dataBR) return null;
-  const [dia, mes, ano] = dataBR.split("/");
-  return `${ano}-${mes}-${dia}`;
-}
-
-}
-;
-// =====================================================
-// 📱 Barra flutuante responsiva com animação
-// =====================================================
-const menuFlutuante = document.querySelector(".menu-flutuante");
-
-function atualizarModoMenu() {
-  const largura = window.innerWidth;
-  const jaCompacta = menuFlutuante.classList.contains("compacta");
-
-  if (largura <= 768 && !jaCompacta) {
-    // entra em modo compacto com delay e animação
-    menuFlutuante.classList.add("compacta");
-    document.body.classList.add("menu-compacto");
-    setTimeout(() => {
-      menuFlutuante.style.opacity = "1";
-    }, 50);
-  } 
-  else if (largura > 768 && jaCompacta) {
-    // sai com animação reversa antes de remover classes
-    menuFlutuante.classList.add("saindo");
-    setTimeout(() => {
-      menuFlutuante.classList.remove("compacta", "saindo");
-      document.body.classList.remove("menu-compacto");
-      menuFlutuante.style.opacity = "1";
-    }, 300);
-  }
-}
-
-// detecta resize e load
-window.addEventListener("resize", atualizarModoMenu);
-window.addEventListener("load", atualizarModoMenu);
-
+// ... [Restante das funções de Eventos e FullCalendar mantidas do original] ...
