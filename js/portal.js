@@ -14,64 +14,56 @@ let isAdmin = false;
 // 🚀 INICIALIZAÇÃO
 // =====================================================
 window.addEventListener("DOMContentLoaded", () => {
-  console.log("Iniciando Portal...");
+  console.log("Sistema Iniciado.");
 
-  // 1. Ativa botões globais IMEDIATAMENTE (para não travar o Sair)
+  // 1. Botões que funcionam sempre (Sair, Tema)
   configurarBotoesGlobais();
 
-  // 2. O Porteiro: Verifica autenticação
+  // 2. O Porteiro (Autenticação)
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      console.log("Usuário logado:", user.email);
+      // --- USUÁRIO LOGADO ---
       userEmail = user.email;
       isAdmin = userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
-      // Tenta recuperar dados (com proteção contra erros)
+      // Recupera dados do LocalStorage ou Banco
       try {
         if (!localStorage.getItem("userName")) {
-          console.log("Buscando dados no Firestore...");
-          const docRef = doc(db, "atletas", user.uid);
-          const snap = await getDoc(docRef);
-          
+          const snap = await getDoc(doc(db, "atletas", user.uid));
           if (snap.exists()) {
             const data = snap.data();
             localStorage.setItem("userName", data.nome || "Atleta");
             localStorage.setItem("userGroup", data.grupo || "atleta");
-            localStorage.setItem("userEmail", data.email || user.email);
-          } else {
-            console.warn("Perfil não encontrado no banco.");
+            localStorage.setItem("userEmail", data.email);
           }
         }
-      } catch (error) {
-        console.error("Erro crítico ao buscar perfil:", error);
-        // Não trava o site, usa valores padrão
-      }
+      } catch (e) { console.error("Erro perfil:", e); }
 
-      // Atualiza variáveis da memória
+      // Atualiza memória
       userName = localStorage.getItem("userName") || "Atleta";
       userGroup = localStorage.getItem("userGroup") || "atleta";
 
-      // 3. Inicia a Interface
-      try {
-        setupUI();
-        setupNavigation();
-        setupModais();
-        
-        if (isAdmin) {
-          carregarListaAtletas();
-          carregarRegras();
-        }
-        
-        carregarEventos();
-        carregarDashboard();
-        await verificarCallbackStrava();
-        lucide.createIcons();
-      } catch (e) {
-        console.error("Erro ao desenhar tela:", e);
+      // 3. Monta a Tela
+      setupUI();
+      setupNavigation();
+      setupModais();
+
+      // 4. Carrega Dados Específicos
+      if (isAdmin) {
+        carregarListaAtletas();
+        carregarRegras();
+      } else {
+        // [CORREÇÃO] O botão do Strava volta a funcionar aqui
+        configurarStravaAtleta(); 
       }
+      
+      carregarEventos();
+      carregarDashboard();
+      await verificarCallbackStrava();
+      lucide.createIcons();
 
     } else {
-      console.log("Não autenticado. Redirecionando...");
+      // --- NÃO LOGADO ---
       window.location.href = "index.html";
     }
   });
@@ -82,10 +74,7 @@ window.addEventListener("DOMContentLoaded", () => {
 // =====================================================
 function setupUI() {
   const nomeSpan = document.querySelector(".portal-nome");
-  if (nomeSpan) {
-    const primeiroNome = userName.split(" ")[0];
-    nomeSpan.textContent = `Olá, ${primeiroNome}`;
-  }
+  if(nomeSpan) nomeSpan.textContent = `Olá, ${userName.split(" ")[0]}`;
   
   const userSpan = document.getElementById("userName");
   if(userSpan) userSpan.textContent = userName.split(" ")[0];
@@ -96,31 +85,24 @@ function setupUI() {
     badge.style.background = isAdmin ? "#e63946" : "rgba(255,255,255,0.2)";
   }
 
-  // Controle Admin
+  // Remove coisas de Admin se for Atleta
   if (!isAdmin) {
     document.querySelectorAll(".admin-only").forEach(el => el.remove());
   } else {
-    configurarAdminStrava();
+    configurarAdminStrava(); // Configuração das chaves (Admin)
   }
 }
 
 function configurarBotoesGlobais() {
-  const btnSair = document.getElementById("logoutBtn");
-  if (btnSair) {
-    btnSair.addEventListener("click", () => {
-      signOut(auth).then(() => { 
-        localStorage.clear(); 
-        window.location.href = "index.html"; 
-      });
-    });
-  }
+  document.getElementById("logoutBtn")?.addEventListener("click", () => {
+    signOut(auth).then(() => { localStorage.clear(); window.location.href = "index.html"; });
+  });
 
   const themeToggle = document.getElementById("theme-toggle");
   if(themeToggle) {
     themeToggle.addEventListener("click", () => {
-      const body = document.body;
-      const isDark = body.getAttribute("data-theme") === "dark";
-      body.setAttribute("data-theme", isDark ? "light" : "dark");
+      const isDark = document.body.getAttribute("data-theme") === "dark";
+      document.body.setAttribute("data-theme", isDark ? "light" : "dark");
       themeToggle.innerHTML = isDark ? '<i data-lucide="moon"></i>' : '<i data-lucide="sun"></i>';
       lucide.createIcons();
     });
@@ -128,185 +110,117 @@ function configurarBotoesGlobais() {
 }
 
 // =====================================================
-// 👥 GESTÃO DE ATLETAS
+// 🚴 STRAVA (O RESGATE DO BOTÃO)
 // =====================================================
-async function carregarListaAtletas() {
-  const tbody = document.getElementById("listaAtletas");
-  if(!tbody) return;
+function configurarStravaAtleta() {
+  const btn = document.getElementById("btnConnectStrava");
+  if (btn) {
+    // Remove clenes anteriores para evitar duplicação (boa prática)
+    const novoBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(novoBtn, btn);
 
-  tbody.innerHTML = "<tr><td colspan='4'>Carregando...</td></tr>";
-  
-  try {
-    const snap = await getDocs(collection(db, "atletas"));
-    tbody.innerHTML = "";
-    
-    if (snap.empty) {
-      tbody.innerHTML = "<tr><td colspan='4'>Nenhum cadastro.</td></tr>";
-      return;
-    }
-
-    snap.forEach(docSnap => {
-      const u = docSnap.data();
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td><strong>${u.nome}</strong></td>
-        <td><span style="font-size:0.85rem; background:#eee; padding:2px 6px; border-radius:4px;">${u.grupo}</span></td>
-        <td style="font-size:0.9rem; color:#666;">${u.email}</td>
-        <td>
-          <button class="btn-acao btn-excluir" data-id="${docSnap.id}" title="Excluir" style="color:red; border-color:transparent;">
-            <i data-lucide="trash-2" style="width:18px;"></i>
-          </button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-    
-    document.querySelectorAll(".btn-excluir").forEach(btn => {
-      btn.addEventListener("click", async (e) => {
-        if(confirm("Deseja excluir este atleta?")) {
-          await deleteDoc(doc(db, "atletas", e.currentTarget.dataset.id));
-          carregarListaAtletas();
+    novoBtn.addEventListener("click", async () => {
+      try {
+        const docSnap = await getDoc(doc(db, "config_sistema", "strava"));
+        
+        if (!docSnap.exists()) {
+          alert("Erro: O Administrador ainda não configurou a API do Strava.");
+          return;
         }
-      });
-    });
-    lucide.createIcons();
-
-  } catch(e) {
-    console.error(e);
-    tbody.innerHTML = "<tr><td colspan='4' style='color:red'>Erro ao carregar lista.</td></tr>";
-  }
-}
-
-// =====================================================
-// 📅 EVENTOS
-// =====================================================
-async function carregarEventos() {
-  const lista = document.getElementById("listaEventos");
-  if(!lista) return;
-  
-  const snap = await getDocs(collection(db, "eventos"));
-  lista.innerHTML = "";
-  
-  if(snap.empty) {
-    lista.innerHTML = `<div class="card"><p style="font-weight:400; font-size:1rem;">Nenhum evento.</p></div>`;
-    return;
-  }
-
-  snap.forEach(d => {
-    const ev = d.data();
-    const dataF = ev.data ? new Date(ev.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : 'Data indef.';
-    
-    const card = document.createElement("div");
-    card.className = "card";
-    const corBorda = ev.tipo === 'Prova' ? '#e63946' : '#00b37e'; 
-    
-    card.style.borderLeft = `4px solid ${corBorda}`;
-    card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:start;">
-        <div>
-          <h3 style="margin:0; font-size:1.1rem;">${ev.titulo}</h3>
-          <span style="font-size:0.8rem; color:#666;">${ev.tipo || 'Geral'} • ${ev.km ? ev.km + 'km' : 'Livre'}</span>
-        </div>
-        ${isAdmin ? `<button class="btn-del-evento" data-id="${d.id}" style="background:none; border:none; color:red; cursor:pointer;"><i data-lucide="trash"></i></button>` : ''}
-      </div>
-      <div style="margin-top:10px; font-size:0.95rem; display:flex; gap:15px; color:#444;">
-        <span><i data-lucide="calendar" style="width:14px; display:inline;"></i> ${dataF}</span>
-        <span><i data-lucide="clock" style="width:14px; display:inline;"></i> ${ev.hora || '08:00'}</span>
-      </div>
-    `;
-    lista.appendChild(card);
-  });
-
-  if(isAdmin) {
-    document.querySelectorAll(".btn-del-evento").forEach(b => {
-      b.addEventListener("click", async (e) => {
-        if(confirm("Apagar evento?")) {
-          await deleteDoc(doc(db, "eventos", e.currentTarget.dataset.id));
-          carregarEventos();
+        
+        const { client_id } = docSnap.data();
+        if (!client_id) {
+          alert("Erro: Client ID não encontrado.");
+          return;
         }
-      });
+
+        const redirect = window.location.href.split('?')[0];
+        const scope = "activity:read_all"; // Permissão para ler treinos
+        
+        // Redireciona para o Strava
+        window.location.href = `http://www.strava.com/oauth/authorize?client_id=${client_id}&response_type=code&redirect_uri=${redirect}&approval_prompt=force&scope=${scope}`;
+        
+      } catch (e) {
+        console.error("Erro Strava:", e);
+        alert("Erro de conexão. Verifique o console.");
+      }
     });
   }
 }
 
-// Salvar Evento
-const btnSalvarEvento = document.getElementById("salvarEventoBtn");
-if(btnSalvarEvento) {
-  btnSalvarEvento.addEventListener("click", async () => {
-    const titulo = document.getElementById("eventoTitulo").value;
-    const data = document.getElementById("eventoData").value;
-    const hora = document.getElementById("eventoHora").value;
-    const tipo = document.getElementById("eventoTipo").value;
-    const km = document.getElementById("eventoKm").value;
+// Retorno do Strava (Callback)
+async function verificarCallbackStrava() {
+  const code = new URLSearchParams(window.location.search).get("code");
+  if(code) {
+    window.history.replaceState({}, document.title, window.location.pathname);
+    
+    // Feedback visual simples
+    const container = document.getElementById("dashboardCards");
+    if(container) container.innerHTML = "<p>Conectando ao Strava...</p>";
 
-    if(!titulo || !data) return alert("Preencha Título e Data!");
-
-    btnSalvarEvento.textContent = "Salvando...";
     try {
-      await addDoc(collection(db, "eventos"), { titulo, data, hora, tipo, km, criadoEm: new Date().toISOString() });
-      document.getElementById("modalEvento").style.display = "none";
-      carregarEventos();
-      document.getElementById("eventoTitulo").value = ""; 
-    } catch(e) { alert("Erro ao salvar: " + e.message); }
-    btnSalvarEvento.textContent = "Criar Evento";
-  });
+      const snap = await getDoc(doc(db, "config_sistema", "strava"));
+      if(snap.exists()) {
+         const { client_id, client_secret } = snap.data();
+         
+         // Troca CODE por TOKEN
+         const res = await fetch('https://www.strava.com/oauth/token', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ 
+              client_id, client_secret, code, grant_type: 'authorization_code' 
+            })
+         });
+         
+         const data = await res.json();
+         
+         if(data.access_token) {
+            localStorage.setItem("strava_access_token", data.access_token);
+            alert("Strava Conectado com Sucesso!");
+            carregarDashboard(); // Recarrega para mostrar os dados
+         } else {
+            alert("Falha na autenticação Strava.");
+         }
+      }
+    } catch(e) { console.error(e); }
+  }
 }
 
-// =====================================================
-// 🏅 REGRAS (CRITÉRIOS)
-// =====================================================
-async function carregarRegras() {
-  const div = document.getElementById("listaCriterios");
-  if(!div) return;
-  
-  const snap = await getDocs(collection(db, "criterios"));
-  div.innerHTML = "";
-
-  snap.forEach(d => {
-    const r = d.data();
-    const divCard = document.createElement("div");
-    divCard.className = "card";
-    divCard.style.cssText = "padding:15px; border-left:4px solid var(--secondary); margin-bottom:10px;";
-    divCard.innerHTML = `
-      <div style="display:flex; justify-content:space-between;">
-         <div>
-            <strong>${r.descricao}</strong>
-            <div style="font-size:0.85rem; color:#666;">Tipo: ${r.tipo === 'km' ? 'Por KM' : 'Fixo'}</div>
-         </div>
-         <div style="text-align:right;">
-            <div style="font-size:1.2rem; color:var(--primary); font-weight:bold;">${r.pontos} pts</div>
-            <button class="btn-del-regra" data-id="${d.id}" style="color:red; background:none; border:none; cursor:pointer; font-size:0.8rem;">Excluir</button>
-         </div>
-      </div>
-    `;
-    div.appendChild(divCard);
-  });
-
-  document.querySelectorAll(".btn-del-regra").forEach(b => {
-    b.addEventListener("click", async (e) => {
-      await deleteDoc(doc(db, "criterios", e.currentTarget.dataset.id));
-      carregarRegras();
+// Configuração do Admin (Salvar Chaves)
+function configurarAdminStrava() {
+  const btn = document.getElementById("btnSalvarConfigStrava");
+  if(btn) {
+    btn.addEventListener("click", async () => {
+       const id = document.getElementById("stravaClientId").value;
+       const secret = document.getElementById("stravaClientSecret").value;
+       if(!id || !secret) return alert("Preencha Client ID e Secret.");
+       
+       await setDoc(doc(db, "config_sistema", "strava"), { client_id: id, client_secret: secret });
+       alert("Configurações salvas!");
     });
-  });
+  }
 }
 
-const btnSalvarRegra = document.getElementById("salvarCriterioBtn");
-if(btnSalvarRegra) {
-  btnSalvarRegra.addEventListener("click", async () => {
-    const descricao = document.getElementById("regraDesc").value;
-    const pontos = document.getElementById("regraPontos").value;
-    const tipo = document.getElementById("regraTipo").value;
-
-    if(!descricao || !pontos) return alert("Preencha tudo.");
-
-    await addDoc(collection(db, "criterios"), { descricao, pontos, tipo });
-    document.getElementById("modalCriterio").style.display = "none";
-    carregarRegras();
+// Busca Atividades (API)
+async function buscarDadosStrava(token) {
+  const r = await fetch("https://www.strava.com/api/v3/athlete/activities?per_page=30", { 
+    headers: { "Authorization": `Bearer ${token}` }
   });
+  
+  if(!r.ok) throw new Error(r.status);
+  
+  const d = await r.json();
+  let dist = 0; 
+  d.forEach(x => dist += x.distance);
+  
+  return { 
+    distancia: (dist/1000).toFixed(1), 
+    count: d.length 
+  };
 }
 
 // =====================================================
-// 📊 DASHBOARD & UTILITÁRIOS
+// 📊 DASHBOARD
 // =====================================================
 async function carregarDashboard() {
   const container = document.getElementById("dashboardCards");
@@ -321,9 +235,9 @@ async function carregarDashboard() {
       container.innerHTML = `
         <div class="card"><i data-lucide="users"></i><h3>Atletas</h3><p>${u.size}</p></div>
         <div class="card"><i data-lucide="calendar"></i><h3>Eventos</h3><p>${e.size}</p></div>
-        <div class="card"><i data-lucide="activity"></i><h3>Sistema</h3><p>Ativo</p></div>
+        <div class="card"><i data-lucide="server"></i><h3>Sistema</h3><p>Online</p></div>
       `;
-    } catch(e) { container.innerHTML = "<p>Erro ao carregar dados.</p>"; }
+    } catch(e) { container.innerHTML = "<p>Erro dados.</p>"; }
   } else {
     if(titulo) titulo.textContent = "Seu Desempenho";
     const token = localStorage.getItem("strava_access_token");
@@ -339,90 +253,143 @@ async function carregarDashboard() {
        } catch(e) {
          if(e.message.includes("401")) { 
             localStorage.removeItem("strava_access_token"); 
-            carregarDashboard(); 
+            carregarDashboard(); // Pede login de novo
          } else {
-            container.innerHTML = `<div class="card"><p style="color:red">Erro Strava. Tente mais tarde.</p></div>`;
+            container.innerHTML = `<div class="card"><p style="color:red">Erro Strava. <br>Tente reconectar.</p></div>`;
          }
        }
     } else {
        container.innerHTML = `
          <div class="card"><i data-lucide="trophy" style="color:#ccc"></i><h3>Pontos</h3><p style="color:#ccc">0</p></div>
-         <div class="card" style="border-left:4px solid #fc4c02"><i data-lucide="alert-circle" style="color:#fc4c02"></i><h3>Conectar</h3><p style="font-size:0.9rem">Configure o Strava.</p></div>
+         <div class="card" style="border-left:4px solid #fc4c02">
+            <i data-lucide="alert-circle" style="color:#fc4c02"></i>
+            <h3>Conectar</h3>
+            <p style="font-size:0.9rem">Clique em Configurações > Conectar Strava</p>
+         </div>
        `;
     }
   }
 }
 
-// MODAIS
-function setupModais() {
-  const modalEv = document.getElementById("modalEvento");
-  const modalCr = document.getElementById("modalCriterio");
+// =====================================================
+// 👥 GESTÃO & EVENTOS (ADMIN)
+// =====================================================
+async function carregarListaAtletas() {
+  const tbody = document.getElementById("listaAtletas");
+  if(!tbody) return;
+  tbody.innerHTML = "<tr><td colspan='4'>Carregando...</td></tr>";
+  try {
+    const s = await getDocs(collection(db, "atletas"));
+    tbody.innerHTML = "";
+    s.forEach(d => {
+      const u = d.data();
+      tbody.innerHTML += `
+        <tr>
+          <td>${u.nome}</td>
+          <td>${u.grupo}</td>
+          <td>${u.email}</td>
+          <td><button class="btn-del btn-acao" data-id="${d.id}" style="color:red; border:0;"><i data-lucide="trash-2"></i></button></td>
+        </tr>`;
+    });
+    document.querySelectorAll(".btn-del").forEach(b => b.addEventListener("click", async e => {
+      if(confirm("Excluir?")) { await deleteDoc(doc(db,"atletas",e.currentTarget.dataset.id)); carregarListaAtletas(); }
+    }));
+    lucide.createIcons();
+  } catch(e){ tbody.innerHTML = "<tr><td colspan='4'>Erro.</td></tr>"; }
+}
+
+async function carregarEventos() {
+  const l = document.getElementById("listaEventos");
+  if(!l) return;
+  const s = await getDocs(collection(db, "eventos"));
+  l.innerHTML = "";
+  if(s.empty) return l.innerHTML = "<div class='card'><p>Sem eventos.</p></div>";
   
-  document.getElementById("abrirModalEvento")?.addEventListener("click", () => modalEv.style.display = "flex");
-  document.getElementById("abrirModalCriterio")?.addEventListener("click", () => modalCr.style.display = "flex");
-  
-  document.querySelectorAll(".fechar-modal").forEach(b => b.addEventListener("click", () => {
-    if(modalEv) modalEv.style.display = "none";
-    if(modalCr) modalCr.style.display = "none";
+  s.forEach(d => {
+    const ev = d.data();
+    const dataF = ev.data ? new Date(ev.data).toLocaleDateString('pt-BR',{timeZone:'UTC'}) : '-';
+    l.innerHTML += `
+      <div class="card" style="border-left:4px solid ${ev.tipo==='Prova'?'#e63946':'#00b37e'}">
+        <div style="display:flex; justify-content:space-between">
+           <h3>${ev.titulo}</h3>
+           ${isAdmin ? `<button class="del-ev" data-id="${d.id}" style="border:0; bg:none; color:red; cursor:pointer">X</button>` : ''}
+        </div>
+        <p style="font-size:0.9rem; color:#666; margin-top:5px">📅 ${dataF} • ${ev.tipo}</p>
+      </div>`;
+  });
+  if(isAdmin) document.querySelectorAll(".del-ev").forEach(b => b.addEventListener("click", async e => {
+     if(confirm("Apagar?")) { await deleteDoc(doc(db,"eventos",e.target.dataset.id)); carregarEventos(); }
   }));
 }
 
-// NAVEGAÇÃO
-function setupNavigation() {
-  document.querySelectorAll(".menu-item").forEach(menu => {
-    menu.addEventListener("click", () => {
-      document.querySelectorAll(".menu-item").forEach(m => m.classList.remove("active"));
-      menu.classList.add("active");
-      const t = menu.dataset.section;
-      document.querySelectorAll("main section").forEach(s => {
-        s.classList.remove("active-section");
-        if(s.id === t) s.classList.add("active-section");
-      });
-      lucide.createIcons();
-    });
+document.getElementById("salvarEventoBtn")?.addEventListener("click", async () => {
+  const titulo = document.getElementById("eventoTitulo").value;
+  const data = document.getElementById("eventoData").value;
+  const tipo = document.getElementById("eventoTipo").value;
+  if(!titulo || !data) return alert("Preencha título e data");
+  await addDoc(collection(db,"eventos"), { titulo, data, tipo, criadoEm: new Date().toISOString() });
+  document.getElementById("modalEvento").style.display = "none";
+  carregarEventos();
+});
+
+// =====================================================
+// 🏅 REGRAS (ADMIN)
+// =====================================================
+async function carregarRegras() {
+  const l = document.getElementById("listaCriterios");
+  if(!l) return;
+  const s = await getDocs(collection(db, "criterios"));
+  l.innerHTML = "";
+  s.forEach(d => {
+    const r = d.data();
+    l.innerHTML += `
+      <div class="card" style="padding:15px; border-left:4px solid var(--secondary); margin-bottom:10px">
+        <div style="display:flex; justify-content:space-between">
+           <strong>${r.descricao}</strong>
+           <div>
+             <span style="color:var(--primary); font-weight:bold">${r.pontos} pts</span>
+             <button class="del-regra" data-id="${d.id}" style="color:red; border:0; bg:none; cursor:pointer; margin-left:10px">X</button>
+           </div>
+        </div>
+      </div>`;
   });
+  document.querySelectorAll(".del-regra").forEach(b => b.addEventListener("click", async e => {
+     await deleteDoc(doc(db,"criterios",e.target.dataset.id)); carregarRegras();
+  }));
 }
 
-// STRAVA E AUXILIARES
-async function buscarDadosStrava(token) {
-  const r = await fetch("https://www.strava.com/api/v3/athlete/activities?per_page=30", { headers: { "Authorization": `Bearer ${token}` }});
-  if(!r.ok) throw new Error(r.status);
-  const d = await r.json();
-  let dist = 0; d.forEach(x => dist += x.distance);
-  return { distancia: (dist/1000).toFixed(1), count: d.length };
-}
+document.getElementById("salvarCriterioBtn")?.addEventListener("click", async () => {
+  const descricao = document.getElementById("regraDesc").value;
+  const pontos = document.getElementById("regraPontos").value;
+  const tipo = document.getElementById("regraTipo").value;
+  if(!descricao || !pontos) return alert("Preencha tudo");
+  await addDoc(collection(db,"criterios"), { descricao, pontos, tipo });
+  document.getElementById("modalCriterio").style.display = "none";
+  carregarRegras();
+});
 
-async function verificarCallbackStrava() {
-  const code = new URLSearchParams(window.location.search).get("code");
-  if(code) {
-    window.history.replaceState({}, document.title, window.location.pathname);
-    try {
-      const snap = await getDoc(doc(db, "config_sistema", "strava"));
-      if(snap.exists()) {
-         const { client_id, client_secret } = snap.data();
-         const res = await fetch('https://www.strava.com/oauth/token', {
-            method: 'POST', headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ client_id, client_secret, code, grant_type: 'authorization_code' })
-         });
-         const data = await res.json();
-         if(data.access_token) {
-            localStorage.setItem("strava_access_token", data.access_token);
-            alert("Strava Conectado!");
-            carregarDashboard();
-         }
-      }
-    } catch(e) { console.error(e); }
-  }
-}
-
-function configurarAdminStrava() {
-  const btn = document.getElementById("btnSalvarConfigStrava");
-  if(btn) {
-    btn.addEventListener("click", async () => {
-       const id = document.getElementById("stravaClientId").value;
-       const secret = document.getElementById("stravaClientSecret").value;
-       await setDoc(doc(db, "config_sistema", "strava"), { client_id: id, client_secret: secret });
-       alert("Salvo!");
+// =====================================================
+// 🧭 UTILITÁRIOS (Navegação & Modais)
+// =====================================================
+function setupNavigation() {
+  document.querySelectorAll(".menu-item").forEach(m => m.addEventListener("click", () => {
+    document.querySelectorAll(".menu-item").forEach(x => x.classList.remove("active"));
+    m.classList.add("active");
+    const t = m.dataset.section;
+    document.querySelectorAll("main section").forEach(s => {
+       s.classList.remove("active-section");
+       if(s.id === t) s.classList.add("active-section");
     });
-  }
+    lucide.createIcons();
+  }));
+}
+
+function setupModais() {
+  const mev = document.getElementById("modalEvento");
+  const mcr = document.getElementById("modalCriterio");
+  document.getElementById("abrirModalEvento")?.addEventListener("click", () => mev.style.display="flex");
+  document.getElementById("abrirModalCriterio")?.addEventListener("click", () => mcr.style.display="flex");
+  document.querySelectorAll(".fechar-modal").forEach(b => b.addEventListener("click", () => {
+    if(mev) mev.style.display="none"; if(mcr) mcr.style.display="none";
+  }));
 }
