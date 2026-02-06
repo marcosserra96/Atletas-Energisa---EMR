@@ -1,14 +1,8 @@
-// =====================================================
-// 🔥 Firebase Configuração do Portal Comitê
-// =====================================================
-
-// Importa os módulos necessários do Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-// =====================================================
-// 🚀 Configuração do seu projeto Firebase
-// =====================================================
+// --- SUA CONFIGURAÇÃO ---
 const firebaseConfig = {
   apiKey: "AIzaSyC2l8LU3vYfQjTly8JSa658mfIlVk2Dw8E",
   authDomain: "inovacao-emr.firebaseapp.com",
@@ -18,10 +12,16 @@ const firebaseConfig = {
   appId: "1:1075399271811:web:f532f1d6fa2b21c53c2ff3"
 };
 
-// =====================================================
-// 🧩 Inicialização e exportação do Firestore
-// =====================================================
+// Inicia o App (apenas uma vez)
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
-export { db };
+// Prepara os serviços para exportação
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// Exporta tudo o que o site precisa
+export { 
+  app, db, auth, 
+  collection, getDocs, doc, getDoc, setDoc, updateDoc, addDoc, 
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut 
+};
