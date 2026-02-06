@@ -3,15 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Portal Comitê - Energisa</title>
-
+  <title>Portal Energisa</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest"></script>
-
   <link rel="stylesheet" href="css/portal.css" />
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 
 <body>
@@ -21,11 +17,8 @@
       <span class="portal-nome">Portal Energisa</span>
     </div>
     <div class="right">
-      <button id="theme-toggle" class="theme-toggle" title="Alternar tema">
-        <i data-lucide="moon"></i>
-      </button>
-      <span id="userName">Usuário</span>
-      <span id="userGroupBadge" style="font-size:0.75rem; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">...</span>
+      <span id="userName">Carregando...</span>
+      <span id="userGroupBadge" style="font-size:0.75rem; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;"></span>
       <button id="logoutBtn" class="btn-primario">
         <i data-lucide="log-out"></i> Sair
       </button>
@@ -34,17 +27,21 @@
 
   <nav class="menu-flutuante">
     <div class="menu-item active" data-section="inicio">
-      <i data-lucide="layout-dashboard"></i><span>Visão Geral</span>
+      <i data-lucide="layout-dashboard"></i><span>Início</span>
     </div>
+    
     <div class="menu-item admin-only" data-section="atletas">
-      <i data-lucide="users"></i><span>Gestão Atletas</span>
+      <i data-lucide="users"></i><span>Gestão</span>
     </div>
+    
     <div class="menu-item" data-section="eventos">
       <i data-lucide="calendar"></i><span>Eventos</span>
     </div>
+    
     <div class="menu-item admin-only" data-section="criterios">
       <i data-lucide="check-circle"></i><span>Critérios</span>
     </div>
+    
     <div class="menu-item" data-section="config">
       <i data-lucide="settings"></i><span>Configurações</span>
     </div>
@@ -53,110 +50,69 @@
   <main>
     <section id="inicio" class="active-section">
       <h2 id="tituloDashboard">Visão Geral</h2>
-      
-      <div class="cards" id="dashboardCards"></div>
-
-      <div class="cards" style="margin-top: 30px;">
-        <div class="card" style="grid-column: span 2;">
-          <h3>Desempenho Recente</h3>
-          <canvas id="graficoParticipacao"></canvas>
+      <div class="cards" id="dashboardCards">
         </div>
-        <div class="card">
-          <h3>Ranking Geral</h3>
-          <ul id="rankingList" style="list-style:none; padding:0; margin:0;"></ul>
-        </div>
-      </div>
     </section>
 
     <section id="atletas">
       <div class="header-acao">
-        <h2>Gerenciar Equipe</h2>
+        <h2>Gestão de Atletas</h2>
       </div>
       <table class="tabela-simples">
         <thead>
-          <tr><th>Nome</th><th>Equipe</th><th>Status</th><th>Ações</th></tr>
+          <tr><th>Nome</th><th>Grupo</th><th>Ações</th></tr>
         </thead>
-        <tbody id="listaAtletas"></tbody>
+        <tbody id="listaAtletas">
+          <tr><td colspan="3">Carregando...</td></tr>
+        </tbody>
       </table>
-      
-      <div class="header-acao" style="margin-top:30px;">
-        <h3>Validação de Treinos</h3>
-        <button class="btn-acao" id="btnValidarTreino"><i data-lucide="check-square"></i> Validar Manualmente</button>
-      </div>
     </section>
 
     <section id="eventos">
       <div class="header-acao">
-        <h2>Calendário de Eventos</h2>
-        <div class="acoes-evento">
-          <button id="novoEventoBtn" class="btn-acao admin-only">
-            <i data-lucide="plus-circle"></i> Novo Evento
-          </button>
-          <button id="alternarVisao" class="btn-acao">
-            <i data-lucide="calendar-days"></i> Alternar Visão
-          </button>
-        </div>
+        <h2>Eventos</h2>
+        <button id="novoEventoBtn" class="btn-acao admin-only">
+          <i data-lucide="plus"></i> Criar Evento
+        </button>
       </div>
-      <div id="listaEventos"></div>
-      <div id="calendarioEventos" style="display:none;"></div>
+      <div id="listaEventos">
+        <p>Nenhum evento próximo.</p>
+      </div>
     </section>
 
     <section id="criterios">
-      <div class="header-acao">
-        <h2>Critérios de Pontuação</h2>
-        <button id="novoCriterioBtn" class="btn-acao">
-          <i data-lucide="plus-circle"></i> Novo Critério
-        </button>
-      </div>
-      <div id="listaCriterios"></div>
+      <h2>Critérios de Pontuação</h2>
+      <p>Configure aqui como os pontos são distribuídos.</p>
     </section>
 
     <section id="config">
       <h2>Configurações</h2>
       
-      <div class="cards" style="grid-template-columns: 1fr;">
-        <div class="card" style="text-align: left; border-left: 5px solid #fc4c02;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <h3 style="color:#fc4c02; display:flex; align-items:center; gap:8px;">
-                <i data-lucide="activity"></i> Strava
-              </h3>
-              <p style="font-size:0.9rem; color:#666;">Conecte sua conta para sincronizar pedais e corridas automaticamente.</p>
-            </div>
-            <button id="btnConnectStrava" class="btn-primario" style="background:#fc4c02; border:none;">
-              Conectar Agora
-            </button>
-          </div>
+      <div class="cards" style="grid-template-columns: 1fr; margin-bottom: 20px;">
+        <div class="card" style="text-align:left; border-left: 4px solid #fc4c02;">
+          <h3><i data-lucide="activity"></i> Strava</h3>
+          <p>Conecte sua conta para sincronizar atividades.</p>
+          <button id="btnConnectStrava" class="btn-primario" style="background:#fc4c02; border:none; margin-top:10px;">
+            Conectar Agora
+          </button>
         </div>
+      </div>
 
-        <div class="card admin-only" style="text-align: left; border-left: 5px solid var(--azul);">
-          <h3>⚙️ Integração API (Admin)</h3>
-          <p style="font-size:0.9rem; margin-bottom:15px;">Configure as chaves do Strava Developers.</p>
+      <div class="cards admin-only" style="grid-template-columns: 1fr;">
+        <div class="card" style="text-align:left; border-left: 4px solid #009bc1;">
+          <h3>⚙️ API Strava (Admin)</h3>
+          <label style="display:block; margin-top:10px;">Client ID</label>
+          <input type="text" id="stravaClientId" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:6px;">
           
-          <label style="display:block; margin-bottom:5px; font-weight:500;">Client ID</label>
-          <input type="text" id="stravaClientId" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ddd; border-radius:6px;">
-          
-          <label style="display:block; margin-bottom:5px; font-weight:500;">Client Secret</label>
-          <input type="password" id="stravaClientSecret" style="width:100%; padding:8px; margin-bottom:15px; border:1px solid #ddd; border-radius:6px;">
+          <label style="display:block;">Client Secret</label>
+          <input type="password" id="stravaClientSecret" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:6px;">
           
           <button id="btnSalvarConfigStrava" class="btn-primario">Salvar Credenciais</button>
-        </div>
-
-        <div class="card" style="text-align: left;">
-          <h3>Segurança</h3>
-          <button id="btnAlterarSenha" class="btn-acao" style="margin-top:10px;">
-            <i data-lucide="lock"></i> Alterar Senha
-          </button>
         </div>
       </div>
     </section>
   </main>
 
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales-all.global.min.js"></script>
-
   <script type="module" src="js/portal.js"></script>
-  <script>lucide.createIcons();</script>
 </body>
 </html>
