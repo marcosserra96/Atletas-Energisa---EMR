@@ -6,11 +6,15 @@
   --bg-card: #ffffff;
   --text: #222;
   --text-light: #666;
-  --primary: #009bc1;
+  --primary: #009bc1;       /* Azul Energisa */
   --primary-hover: #0080a4;
+  --secondary: #00b37e;     /* Verde Energisa */
+  --accent: #f37021;        /* Laranja Energisa */
+  --danger: #e63946;
   --border: #e3e6eb;
-  --radius: 14px;
-  --shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  --radius: 12px;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --font-main: "Poppins", sans-serif;
 }
 
 [data-theme="dark"] {
@@ -19,7 +23,7 @@
   --text: #f0f0f0;
   --text-light: #aaa;
   --border: #333;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 /* =======================================================
@@ -27,817 +31,239 @@
 ======================================================= */
 body {
   margin: 0;
-  font-family: "Poppins", sans-serif;
+  font-family: var(--font-main);
   background: var(--bg);
   color: var(--text);
   transition: background 0.3s, color 0.3s;
   overflow-x: hidden;
+  padding-bottom: 80px; /* Espaço para menu mobile */
+}
+
+/* Evita estilo Windows 98 em inputs e selects */
+input, select, textarea {
+  font-family: var(--font-main);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box; /* Garante que padding não estoure a largura */
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 155, 193, 0.15);
+}
+
+/* Botões sem estilo padrão */
+button {
+  cursor: pointer;
+  font-family: var(--font-main);
+  border: none;
 }
 
 /* =======================================================
    🟢 TOPO
 ======================================================= */
-/* =======================================================
-   🟢 TOPO AJUSTADO — alinhamento perfeito à direita
-======================================================= */
 .topbar {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
+  top: 0; left: 0; width: 100%;
   background: linear-gradient(90deg, #007b91, #00a693);
   color: white;
-  padding: 10px 20px; /* 🔹 diminui um pouco e dá respiro lateral */
+  padding: 12px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
   z-index: 1000;
-  overflow: hidden; /* evita que algo ultrapasse */
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.topbar .left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.topbar .left { display: flex; align-items: center; gap: 12px; }
+.topbar .logo { height: 24px; filter: brightness(0) invert(1); }
+.portal-nome { font-weight: 600; font-size: 1.1rem; letter-spacing: 0.5px; }
 
-.topbar .right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-  justify-content: flex-end;
-  max-width: calc(100% - 100px); /* 🔹 garante que o conjunto não estoure a largura total */
-  box-sizing: border-box;
-}
+.topbar .right { display: flex; align-items: center; gap: 12px; }
 
-#userName {
+/* Badge de Grupo */
+#userGroupBadge {
+  font-size: 0.75rem;
+  background: rgba(255,255,255,0.2);
+  padding: 4px 8px;
+  border-radius: 6px;
   font-weight: 500;
-  max-width: 100px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-/* 🔹 Botão “Sair” perfeitamente dentro do viewport */
-.btn-primario {
-  background: white;
-  color: #007b91;
-  border: none;
-  padding: 6px 12px;
-  border-radius: var(--radius);
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: background 0.2s;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.btn-primario:hover {
-  background: #e8f6fa;
-}
-
-/* 🔹 Mobile */
-@media (max-width: 600px) {
-  #userName {
-    max-width: 70px;
-    font-size: 0.85rem;
-  }
-  .btn-primario {
-    padding: 5px 10px;
-    font-size: 0.85rem;
-  }
-}
-
-
-.topbar .left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.topbar .logo {
-  height: 20px;
-  filter: brightness(0) invert(1);
-}
-
-.portal-nome {
-  font-weight: 600;
-  font-size: 1.1rem;
-}
-
-
-#userName {
-  font-weight: 500;
-}
-
-.btn-primario {
-  background: white;
-  color: #007b91;
-  border: none;
-  padding: 6px 12px;
-  border-radius: var(--radius);
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: background 0.2s;
-}
-
-.btn-primario:hover {
-  background: #e8f6fa;
-}
-/* =======================================================
-   🔧 AJUSTES TOPO — BOTÃO SAIR E NOME DO USUÁRIO
-======================================================= */
-
-/* Garante que o lado direito nunca "estoure" o limite da tela */
-.topbar .right {
-  flex-shrink: 0;
-  min-width: fit-content;
-  max-width: 45%;
-  justify-content: flex-end;
-}
-
-/* Evita que o nome do usuário empurre o botão */
-#userName {
-  max-width: 120px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: right;
-}
-
-/* Botão "Sair" mantém proporção e não ultrapassa */
-.btn-primario {
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* Versão mobile */
-@media (max-width: 600px) {
-  #userName {
-    max-width: 70px;
-    font-size: 0.85rem;
-  }
-
-  .btn-primario {
-    padding: 5px 10px;
-    font-size: 0.85rem;
-  }
-}
-
-
-/* =======================================================
-   🌙 BOTÃO TEMA
-======================================================= */
-.theme-toggle {
-  background: transparent;
-  border: none;
-  cursor: pointer;
+/* Botões do Topo */
+.btn-topo {
+  background: rgba(255,255,255,0.2);
   color: white;
-  font-size: 1.2rem;
+  border-radius: 8px;
+  padding: 6px 12px;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.9rem;
+  transition: 0.2s;
 }
+.btn-topo:hover { background: rgba(255,255,255,0.3); }
 
 /* =======================================================
-   🧭 MENU FLUTUANTE
+   🧭 MENU FLUTUANTE (Inferior Mobile / Superior Desktop)
 ======================================================= */
 .menu-flutuante {
   position: fixed;
-  top: 70px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--bg-card);
-  border-radius: var(--radius);
+  border-radius: 50px;
   box-shadow: var(--shadow);
   display: flex;
-  gap: 10px;
-  padding: 6px 14px;
+  gap: 8px;
+  padding: 8px 12px;
   z-index: 900;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: 8px;
+  padding: 10px 16px;
   cursor: pointer;
-  border-radius: var(--radius);
+  border-radius: 30px;
   color: var(--text-light);
-  transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: 0.2s;
+  white-space: nowrap;
 }
 
-.menu-item:hover {
-  color: var(--primary);
-  background: rgba(0, 155, 193, 0.08);
-}
+.menu-item i { width: 18px; height: 18px; }
+
+.menu-item:hover { background: rgba(0, 155, 193, 0.08); color: var(--primary); }
 
 .menu-item.active {
   background: var(--primary);
   color: white;
+  box-shadow: 0 4px 12px rgba(0, 155, 193, 0.3);
+}
+
+/* Mobile: Apenas ícones se a tela for muito pequena */
+@media (max-width: 768px) {
+  .menu-item span { display: none; }
+  .menu-item { padding: 12px; border-radius: 50%; }
 }
 
 /* =======================================================
-   🧩 SEÇÕES PRINCIPAIS
+   📊 CONTEÚDO PRINCIPAL
 ======================================================= */
 main {
-  padding: 140px 40px 60px;
-  max-width: 1200px;
+  padding: 100px 20px 40px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
-section {
-  display: none;
-  animation: fadeIn 0.3s ease-in;
-}
+section { display: none; animation: fadeIn 0.4s ease; }
+.active-section { display: block; }
 
-.active-section {
-  display: block;
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.header-acao {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
 }
+h2 { color: var(--primary); margin: 0; font-size: 1.5rem; }
 
 /* =======================================================
-   📊 DASHBOARD
+   📦 CARDS E GRID
 ======================================================= */
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 20px;
 }
 
 .card {
   background: var(--bg-card);
   border-radius: var(--radius);
-  padding: 18px;
+  padding: 24px;
   box-shadow: var(--shadow);
-  text-align: center;
-  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
-}
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
 
-.card i {
-  color: var(--primary);
-  width: 26px;
-  height: 26px;
-  margin-bottom: 8px;
-}
+[data-theme="dark"] .card { border-color: #333; }
 
-.card h3 {
-  margin: 8px 0 4px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--texto);
-}
+.card h3 { margin: 10px 0 5px; font-size: 1rem; color: var(--text); }
+.card p { font-size: 1.4rem; font-weight: 700; color: var(--text-light); margin: 0; }
+.card i { color: var(--primary); width: 28px; height: 28px; }
 
-.card p {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--primary);
-  margin: 0;
-}
-
-/* ===== Responsividade ===== */
-@media (max-width: 768px) {
-  .cards {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 14px;
-  }
-
-  .card {
-    padding: 14px;
-  }
-
-  .card i {
-    width: 22px;
-    height: 22px;
-    margin-bottom: 6px;
-  }
-
-  .card h3 {
-    font-size: 0.85rem;
-  }
-
-  .card p {
-    font-size: 1.1rem;
-  }
-}
-
-
-/* =======================================================
-   🧾 TABELAS
-======================================================= */
-.tabela-simples {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-.tabela-simples th {
-  text-align: left;
+/* Botões Principais */
+.btn-primario {
   background: var(--primary);
   color: white;
-  padding: 10px;
-  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: 0.2s;
 }
+.btn-primario:hover { background: var(--primary-hover); transform: translateY(-1px); }
 
-.tabela-simples td {
-  padding: 10px;
-  border-bottom: 1px solid var(--border);
-}
-
-/* =======================================================
-   📅 BOTÕES DE EVENTOS (lado a lado, com estilo azul)
-======================================================= */
-.header-acao {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-}
-
-.acoes-evento {
-  display: flex;
-  flex-direction: row; /* ✅ agora ficam lado a lado */
-  align-items: center;
-  gap: 10px;
-}
-
-.acoes-evento .btn-acao {
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: var(--radius);
-  padding: 8px 16px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
-  box-shadow: var(--shadow);
-}
-
-.acoes-evento .btn-acao:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-}
-
-@media (max-width: 768px) {
-  .acoes-evento {
-    width: 100%;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .acoes-evento .btn-acao {
-    flex: 1;
-  }
-}
-
-
-
-/* =======================================================
-   🗓️ MODAIS
-======================================================= */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 1200;
-}
-
-.modal {
+.btn-acao {
   background: var(--bg-card);
+  border: 1px solid var(--border);
   color: var(--text);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: 0.2s;
+}
+.btn-acao:hover { border-color: var(--primary); color: var(--primary); }
+
+/* =======================================================
+   🧾 TABELAS MODERNAS
+======================================================= */
+.tabela-container {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.tabela-simples {
+  width: 100%; border-collapse: collapse; background: var(--bg-card);
+}
+.tabela-simples th {
+  background: rgba(0, 155, 193, 0.1);
+  color: var(--primary);
+  padding: 14px; text-align: left; font-weight: 600;
+}
+.tabela-simples td {
+  padding: 14px; border-bottom: 1px solid var(--border); color: var(--text);
+}
+.tabela-simples tr:last-child td { border-bottom: none; }
+
+/* =======================================================
+   ⚙️ CONFIGURAÇÕES (Correção Visual)
+======================================================= */
+.config-card {
+  background: var(--bg-card);
   padding: 24px;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  width: 400px;
-  max-width: 90%;
-  animation: fadeIn 0.3s ease;
-}
-
-.modal h3 {
-  margin-top: 0;
-  text-align: center;
-  color: var(--primary);
-}
-
-.modal label {
-  display: block;
-  margin-top: 10px;
-  margin-bottom: 4px;
-  font-weight: 500;
-}
-
-.modal input,
-.modal select {
-  width: 100%;
-  padding: 8px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
-  font-family: inherit;
-}
-
-.botoes-modal {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 18px;
-}
-
-/* =======================================================
-   🧱 CARDS DE EVENTO / CRITÉRIO
-======================================================= */
-.card-evento, .card-criterio {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 16px;
-  box-shadow: var(--shadow);
-  margin-bottom: 12px;
-}
-
-.card-evento h4, .card-criterio h4 {
-  margin-top: 0;
-  color: var(--primary);
-}
-
-/* =======================================================
-   📱 RESPONSIVIDADE
-======================================================= */
-@media (max-width: 768px) {
-  .menu-flutuante {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 4px;
-  }
-
-  main {
-    padding: 120px 20px 60px;
-  }
-
-  .topbar .left span {
-    display: none;
-  }
-}
-/* =======================================================
-   📱 BARRA FLUTUANTE ADAPTATIVA E ANIMADA — V2
-======================================================= */
-.menu-flutuante {
-  transition: all 0.4s ease;
-  transform-origin: top center;
-}
-
-/* --- MODO COMPACTO (mobile) --- */
-.menu-flutuante.compacta {
-  position: fixed;
-  bottom: 0;
-  top: auto;
-  left: 0;
-  width: 100%;
-  justify-content: space-around;
-  border-radius: 20px 20px 0 0;
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.12);
-  padding: 10px 0;
-  background: var(--bg-card);
-  animation: slideUp 0.45s ease-out forwards;
-  opacity: 0;
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(80%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* --- Animação de retorno ao topo (desktop) --- */
-@keyframes slideDown {
-  from {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateY(-60%);
-    opacity: 0;
-  }
-}
-
-.menu-flutuante.saindo {
-  animation: slideDown 0.3s ease-in forwards;
-}
-
-/* --- Itens compactos --- */
-.menu-flutuante.compacta .menu-item {
-  flex-direction: column;
-  gap: 2px;
-  font-size: 0.75rem;
-}
-
-.menu-flutuante.compacta .menu-item span {
-  display: none;
-}
-
-.menu-flutuante.compacta .menu-item i {
-  width: 22px;
-  height: 22px;
-}
-
-/* --- Espaço inferior no conteúdo --- */
-body.menu-compacto main {
-  padding-bottom: 90px;
-}
-
-/* =======================================================
-   🗓️ FLATPICKR CORRIGIDO - ENERGISA STYLE
-======================================================= */
-.flatpickr-calendar {
-  z-index: 3000 !important;
-  font-family: "Poppins", sans-serif !important;
-  border: none !important;
-  border-radius: 10px !important;
-  overflow: hidden !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
-  width: auto !important;
-}
-
-.flatpickr-months {
-  background: var(--primary);
-  color: #fff !important;
-  border: none !important;
-}
-
-.flatpickr-prev-month,
-.flatpickr-next-month {
-  fill: #fff !important;
-  transform: scale(0.7);
-}
-
-.flatpickr-current-month {
-  font-weight: 500;
-  font-size: 0.9rem;
-}
-
-.flatpickr-day {
-  border-radius: 6px;
-  font-size: 0.85rem;
-  line-height: 1.8rem;
-  height: 2rem;
-}
-
-.flatpickr-day.selected,
-.flatpickr-day.startRange,
-.flatpickr-day.endRange {
-  background: var(--primary) !important;
-  color: white !important;
-  border: none !important;
-}
-
-.flatpickr-day:hover {
-  background: rgba(0, 155, 193, 0.1);
-  color: var(--primary);
-}
-/* =======================================================
-   📅 POPUP DE EXPORTAÇÃO DE EVENTOS
-======================================================= */
-.evento-popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.evento-popup-content {
-  background: var(--bg-card);
-  padding: 26px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  max-width: 420px;
-  text-align: center;
-  animation: fadeIn 0.3s ease;
-}
-
-.evento-popup-content h3 {
-  color: var(--primary);
-  margin-bottom: 10px;
-}
-
-.popup-botoes {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.popup-botoes .btn-acao {
-  justify-content: center;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-/* =======================================================
-   📆 FULLCALENDAR — Tema Energisa
-======================================================= */
-.fc {
-  font-family: "Poppins", sans-serif !important;
-  background: var(--bg);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 20px;
-  margin-top: 10px;
-}
-
-.fc-toolbar-title {
-  color: var(--text);
-  font-weight: 600;
-  font-size: 1.4rem;
-  text-transform: capitalize;
-}
-
-.fc-button {
-  background: var(--primary);
-  border: none;
-  color: white;
-  border-radius: var(--radius);
-  padding: 6px 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.fc-button:hover {
-  background: var(--primary-hover);
-}
-
-.fc-button.fc-button-active {
-  background: var(--primary-hover);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
-}
-
-.fc-daygrid-day {
-  border: 1px solid #e5e7eb;
-}
-
-.fc-day-today {
-  background: rgba(0, 155, 193, 0.08) !important;
-}
-
-.fc-col-header-cell {
-  text-transform: lowercase;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.fc-event {
-  background: var(--primary);
-  border: none;
-  border-radius: 8px;
-  color: white;
-  font-weight: 500;
-  padding: 2px 6px;
-}
-
-.fc-event:hover {
-  filter: brightness(0.9);
-}
-
-.fc-daygrid-day-number {
-  color: var(--text);
-  font-weight: 500;
-}
-/* =======================================================
-   🪟 POPUP DE EVENTO — ESTILO ENERGISA
-======================================================= */
-.evento-popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 4000;
-  backdrop-filter: blur(2px);
-  animation: fadeIn 0.2s ease;
-}
-
-.evento-popup-content {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  padding: 28px 32px;
-  width: 380px;
-  text-align: center;
-  position: relative;
-  animation: popIn 0.25s ease;
-}
-
-.evento-popup-content h3 {
-  color: var(--primary);
-  font-weight: 600;
-  margin-bottom: 12px;
-  font-size: 1.2rem;
-}
-
-.evento-popup-content p {
-  color: var(--text);
-  font-size: 0.95rem;
-  line-height: 1.4;
   margin-bottom: 20px;
 }
-
-.popup-botoes {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.config-card label {
+  display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.9rem; color: var(--text-light);
 }
-
-.popup-botoes a,
-.popup-botoes button {
-  text-decoration: none;
-  border: none;
-  border-radius: var(--radius);
-  padding: 10px 14px;
-  font-weight: 500;
-  transition: 0.2s;
-  cursor: pointer;
-}
-
-.popup-botoes a.btn-acao {
-  background: var(--primary);
-  color: #fff;
-}
-
-.popup-botoes a.btn-acao:hover {
-  background: var(--primary-hover);
-}
-
-.popup-botoes .btn-cancelar {
-  background: #f2f2f2;
-  color: #333;
-}
-
-.popup-botoes .btn-cancelar:hover {
-  background: #e6e6e6;
-}
-
-.evento-popup-content::after {
-  content: "✕";
-  position: absolute;
-  top: 10px;
-  right: 14px;
-  font-size: 1.1rem;
-  color: #999;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.evento-popup-content::after:hover {
-  color: var(--primary);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes popIn {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
+.config-card h3 { margin-top: 0; margin-bottom: 15px; font-size: 1.2rem; }
