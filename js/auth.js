@@ -1,4 +1,3 @@
-// Importa tudo do nosso arquivo central
 import { 
   auth, db, doc, setDoc, getDoc, 
   signInWithEmailAndPassword, createUserWithEmailAndPassword 
@@ -55,7 +54,9 @@ if (loginBtn) {
 
     } catch (error) {
       console.error(error);
-      showToast("Erro ao entrar. Verifique seus dados.", "error");
+      let msg = "Erro ao entrar.";
+      if(error.code === 'auth/invalid-credential') msg = "E-mail ou senha incorretos.";
+      showToast(msg, "error");
       loginBtn.textContent = "Entrar";
     }
   });
@@ -72,10 +73,12 @@ if (registerBtn) {
     const grupo = document.getElementById("teamRegister").value;
 
     if (!nome || !email || !pass || !grupo) {
-      return showToast("Preencha tudo e escolha um grupo!", "error");
+      return showToast("Preencha todos os campos e selecione seu grupo!", "error");
     }
 
     registerBtn.textContent = "Criando...";
+    registerBtn.disabled = true; // Evita clique duplo
+
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
       
@@ -88,12 +91,21 @@ if (registerBtn) {
       localStorage.setItem("userGroup", grupo);
       localStorage.setItem("userEmail", email);
 
-      showToast("Conta criada!", "success");
+      showToast("Conta criada com sucesso!", "success");
       setTimeout(() => window.location.href = "portal.html", 1500);
     } catch (err) {
-      console.error(err);
-      showToast("Erro ao cadastrar.", "error");
+      console.error("Erro Cadastro:", err);
+      
+      // TRATAMENTO DE ERROS ESPECÍFICOS
+      let msg = "Erro desconhecido ao cadastrar.";
+      if (err.code === 'auth/email-already-in-use') msg = "Este e-mail já está em uso.";
+      else if (err.code === 'auth/weak-password') msg = "A senha deve ter pelo menos 6 caracteres.";
+      else if (err.code === 'auth/invalid-email') msg = "Formato de e-mail inválido.";
+      else if (err.code === 'permission-denied') msg = "Erro de permissão no banco de dados.";
+      
+      showToast(msg, "error");
       registerBtn.textContent = "Cadastrar";
+      registerBtn.disabled = false;
     }
   });
 }
