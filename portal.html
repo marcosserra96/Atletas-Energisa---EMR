@@ -7,9 +7,9 @@
   
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <link rel="stylesheet" href="css/portal.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -20,12 +20,8 @@
     </div>
     <div class="right">
       <span id="userGroupBadge">Carregando...</span>
-      <button id="theme-toggle" class="btn-topo" title="Tema">
-        <i data-lucide="moon"></i>
-      </button>
-      <button id="logoutBtn" class="btn-topo">
-        <i data-lucide="log-out"></i> Sair
-      </button>
+      <button id="theme-toggle" class="btn-topo"><i data-lucide="moon"></i></button>
+      <button id="logoutBtn" class="btn-topo"><i data-lucide="log-out"></i> Sair</button>
     </div>
   </header>
 
@@ -33,19 +29,15 @@
     <div class="menu-item active" data-section="inicio">
       <i data-lucide="layout-dashboard"></i><span>Visão Geral</span>
     </div>
-    
     <div class="menu-item admin-only" data-section="atletas">
       <i data-lucide="users"></i><span>Gestão</span>
     </div>
-    
     <div class="menu-item" data-section="eventos">
       <i data-lucide="calendar"></i><span>Eventos</span>
     </div>
-    
     <div class="menu-item admin-only" data-section="criterios">
-      <i data-lucide="check-circle"></i><span>Critérios</span>
+      <i data-lucide="check-circle"></i><span>Regras</span>
     </div>
-    
     <div class="menu-item" data-section="config">
       <i data-lucide="settings"></i><span>Config</span>
     </div>
@@ -53,33 +45,20 @@
 
   <main>
     <section id="inicio" class="active-section">
-      <div class="header-acao">
-        <h2 id="tituloDashboard">Olá, Atleta!</h2>
-      </div>
-      
-      <div class="cards" id="dashboardCards">
-        <p>Carregando dados...</p>
-      </div>
-
-      <div class="config-card" style="margin-top: 30px;">
-        <h3>Evolução Mensal</h3>
-        <canvas id="graficoParticipacao" style="max-height: 300px;"></canvas>
-      </div>
+      <div class="header-acao"><h2 id="tituloDashboard">Olá, Atleta!</h2></div>
+      <div class="cards" id="dashboardCards"><p>Carregando...</p></div>
     </section>
 
     <section id="atletas">
       <div class="header-acao">
         <h2>Gestão de Equipe</h2>
-        <button class="btn-primario"><i data-lucide="user-plus"></i> Novo Atleta</button>
       </div>
       <div class="tabela-container">
         <table class="tabela-simples">
           <thead>
-            <tr><th>Nome</th><th>Grupo</th><th>Status</th><th>Ações</th></tr>
+            <tr><th>Nome</th><th>Grupo</th><th>Email</th><th>Ações</th></tr>
           </thead>
-          <tbody id="listaAtletas">
-            <tr><td colspan="4">Carregando lista...</td></tr>
-          </tbody>
+          <tbody id="listaAtletas"></tbody>
         </table>
       </div>
     </section>
@@ -87,69 +66,106 @@
     <section id="eventos">
       <div class="header-acao">
         <h2>Calendário</h2>
-        <button id="novoEventoBtn" class="btn-primario admin-only">
+        <button id="abrirModalEvento" class="btn-primario admin-only">
           <i data-lucide="plus"></i> Criar Evento
         </button>
       </div>
-      <div id="listaEventos" class="cards">
-        <div class="card">
-          <p style="font-size:1rem; font-weight:400;">Nenhum evento próximo.</p>
-        </div>
-      </div>
+      <div id="listaEventos" class="cards"></div>
     </section>
 
     <section id="criterios">
       <div class="header-acao">
-        <h2>Critérios de Pontuação</h2>
+        <h2>Regras de Pontuação</h2>
+        <button id="abrirModalCriterio" class="btn-primario">
+          <i data-lucide="plus"></i> Nova Regra
+        </button>
       </div>
-      <div class="config-card">
-        <p>Configure aqui as regras de pontuação da temporada.</p>
-        <button class="btn-acao">Editar Regras</button>
-      </div>
+      <div id="listaCriterios" class="cards" style="grid-template-columns: 1fr;">
+        </div>
     </section>
 
     <section id="config">
       <div class="header-acao"><h2>Configurações</h2></div>
-
+      
       <div class="config-card" style="border-left: 4px solid #fc4c02;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
           <div>
-            <h3 style="color:#fc4c02; display:flex; align-items:center; gap:8px; margin-bottom:5px;">
-              <i data-lucide="activity"></i> Integração Strava
-            </h3>
-            <p style="font-size:0.9rem; color:var(--text-light); margin:0;">Sincronize seus pedais e corridas automaticamente.</p>
+            <h3 style="color:#fc4c02; margin-bottom:5px;"><i data-lucide="activity"></i> Strava</h3>
+            <p style="margin:0; font-size:0.9rem;">Sincronize atividades.</p>
           </div>
-          <button id="btnConnectStrava" class="btn-primario" style="background:#fc4c02;">
-            Conectar Agora
-          </button>
+          <button id="btnConnectStrava" class="btn-primario" style="background:#fc4c02;">Conectar</button>
         </div>
       </div>
 
       <div class="config-card admin-only">
-        <h3>⚙️ Configurar API Strava (Admin)</h3>
-        <p style="margin-bottom:15px; font-size:0.9rem;">Insira as chaves de desenvolvedor do Strava.</p>
-        
-        <div style="display:grid; gap:15px;">
-          <div>
-            <label>Client ID</label>
-            <input type="text" id="stravaClientId" placeholder="Ex: 123456" />
-          </div>
-          <div>
-            <label>Client Secret</label>
-            <input type="password" id="stravaClientSecret" placeholder="••••••••••••" />
-          </div>
-          <button id="btnSalvarConfigStrava" class="btn-primario">
-            <i data-lucide="save"></i> Salvar Credenciais
-          </button>
-        </div>
-      </div>
-
-      <div class="config-card">
-        <h3>Minha Conta</h3>
-        <button class="btn-acao"><i data-lucide="lock"></i> Alterar Senha</button>
+        <h3>⚙️ API Strava (Admin)</h3>
+        <input type="text" id="stravaClientId" placeholder="Client ID" style="margin-bottom:10px;">
+        <input type="password" id="stravaClientSecret" placeholder="Client Secret" style="margin-bottom:10px;">
+        <button id="btnSalvarConfigStrava" class="btn-primario">Salvar</button>
       </div>
     </section>
   </main>
+
+  <div id="modalEvento" class="modal-overlay">
+    <div class="modal">
+      <h3>Novo Evento</h3>
+      <label>Título</label>
+      <input type="text" id="eventoTitulo" placeholder="Ex: Pedal Solidário">
+      
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <div>
+          <label>Data</label>
+          <input type="date" id="eventoData">
+        </div>
+        <div>
+          <label>Hora</label>
+          <input type="time" id="eventoHora">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <div>
+          <label>Tipo</label>
+          <select id="eventoTipo">
+            <option value="Treino">Treino</option>
+            <option value="Prova">Prova</option>
+            <option value="Social">Social</option>
+          </select>
+        </div>
+        <div>
+          <label>Distância (KM)</label>
+          <input type="number" id="eventoKm" placeholder="0">
+        </div>
+      </div>
+
+      <div class="botoes-modal">
+        <button class="btn-acao fechar-modal">Cancelar</button>
+        <button id="salvarEventoBtn" class="btn-primario">Criar Evento</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalCriterio" class="modal-overlay">
+    <div class="modal">
+      <h3>Nova Regra de Pontuação</h3>
+      <label>Descrição</label>
+      <input type="text" id="regraDesc" placeholder="Ex: 1 ponto a cada 1km">
+      
+      <label>Valor (Pontos)</label>
+      <input type="number" id="regraPontos" placeholder="10">
+      
+      <label>Tipo</label>
+      <select id="regraTipo">
+        <option value="fixo">Fixo (Por presença)</option>
+        <option value="km">Por KM (Multiplicador)</option>
+      </select>
+
+      <div class="botoes-modal">
+        <button class="btn-acao fechar-modal">Cancelar</button>
+        <button id="salvarCriterioBtn" class="btn-primario">Salvar Regra</button>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="js/portal.js"></script>
 </body>
