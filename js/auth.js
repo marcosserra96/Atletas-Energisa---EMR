@@ -1,12 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { 
-  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, fetchSignInMethodsForEmail 
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword 
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import { 
   getFirestore, doc, setDoc, getDoc 
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// --- 1. CONFIGURAÇÃO ---
 const firebaseConfig = {
   apiKey: "AIzaSyC2l8LU3vYfQjTly8JSa658mfIlVk2Dw8E",
   authDomain: "inovacao-emr.firebaseapp.com",
@@ -16,196 +15,107 @@ const firebaseConfig = {
   appId: "1:1075399271811:web:f532f1d6fa2b21c53c2ff3"
 };
 
-// Inicializa Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-console.log("Sistema de Autenticação carregado."); // Debug para confirmar carregamento
-
-// --- 2. FUNÇÕES VISUAIS (TOAST) ---
-function showToast(message, type = "info") {
+// Toast
+function showToast(msg, type = "info") {
   const container = document.getElementById("toastContainer");
-  if (!container) return console.warn("Toast container não encontrado!");
-  
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  toast.style.zIndex = "10000"; // Força ficar acima do modal
-  
-  container.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.style.opacity = "0";
-    setTimeout(() => toast.remove(), 500);
-  }, 4000);
+  if(!container) return;
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  t.style.zIndex = "9999";
+  container.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
 }
 
-// Validação de Email simples
-function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-// --- 3. LÓGICA DE LOGIN ---
+// === LOGIN ===
 const loginBtn = document.getElementById("loginBtn");
 if (loginBtn) {
   loginBtn.addEventListener("click", async (e) => {
     e.preventDefault();
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
 
-    if (!email || !password) return showToast("Digite e-mail e senha.", "error");
+    if (!email || !pass) return showToast("Preencha e-mail e senha", "error");
 
-    const btnText = loginBtn.textContent;
-    loginBtn.textContent = "Verificando...";
-    loginBtn.disabled = true;
-
+    loginBtn.textContent = "Entrando...";
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // Busca dados extras no Firestore
-      const docRef = doc(db, "atletas", user.uid);
-      const docSnap = await getDoc(docRef);
+      const cred = await signInWithEmailAndPassword(auth, email, pass);
+      const snap = await getDoc(doc(db, "atletas", cred.user.uid));
       
-      let nome = "Atleta";
+      let nome = "Usuário";
       let grupo = "atleta";
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        nome = data.nome || nome;
-        grupo = data.grupo || grupo;
+      
+      if (snap.exists()) {
+        nome = snap.data().nome;
+        grupo = snap.data().grupo;
       }
 
-      // Salva sessão
       localStorage.setItem("userName", nome);
       localStorage.setItem("userGroup", grupo);
-      localStorage.setItem("userEmail", user.email);
-
-      showToast("Login realizado! Redirecionando...", "success");
-      setTimeout(() => window.location.href = "portal.html", 1000);
-
-    } catch (error) {
-      console.error("Erro Login:", error);
-      let msg = "Falha ao entrar.";
-      if (error.code === "auth/invalid-credential") msg = "E-mail ou senha incorretos.";
-      showToast(msg, "error");
-      loginBtn.textContent = btnText;
-      loginBtn.disabled = false;
-    }
-  });
-}
-
-// --- 4. LÓGICA DE CADASTRO (DEBUGADA) ---
-const registerBtn = document.getElementById("registerBtn");
-
-if (registerBtn) {
-  registerBtn.addEventListener("click", async (e) => {
-    e.preventDefault(); // Evita recarregar a página
-    console.log("Botão Cadastrar clicado!");
-
-    // Coleta valores
-    const nameInput = document.getElementById("nameRegister");
-    const emailInput = document.getElementById("emailRegister");
-    const passInput = document.getElementById("passwordRegister");
-    const teamInput = document.getElementById("teamRegister");
-
-    const name = nameInput ? nameInput.value.trim() : "";
-    const email = emailInput ? emailInput.value.trim() : "";
-    const password = passInput ? passInput.value.trim() : "";
-    const team = teamInput ? teamInput.value : "";
-
-    console.log("Dados:", { name, email, team }); // Debug
-
-    // Validações explícitas
-    if (!name) return showToast("Por favor, digite seu nome.", "error");
-    if (!email || !isValidEmail(email)) return showToast("E-mail inválido.", "error");
-    if (!password || password.length < 6) return showToast("A senha deve ter no mínimo 6 caracteres.", "error");
-    if (!team) return showToast("Selecione um grupo (Bike, Corrida ou Comitê).", "error");
-
-    // Feedback visual
-    const originalText = registerBtn.textContent;
-    registerBtn.textContent = "Criando conta...";
-    registerBtn.disabled = true;
-
-    try {
-      // 1. Cria usuário no Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // 2. Salva no Firestore
-      await setDoc(doc(db, "atletas", user.uid), {
-        nome: name,
-        email: email,
-        grupo: team,
-        criadoEm: new Date().toISOString()
-      });
-
-      // 3. Salva Sessão
-      localStorage.setItem("userName", name);
-      localStorage.setItem("userGroup", team);
       localStorage.setItem("userEmail", email);
 
-      showToast("Conta criada com sucesso!", "success");
-      
-      setTimeout(() => {
-        window.location.href = "portal.html";
-      }, 1500);
-
-    } catch (error) {
-      console.error("Erro Cadastro:", error);
-      let msg = "Erro ao criar conta.";
-      if (error.code === "auth/email-already-in-use") msg = "Este e-mail já está cadastrado.";
-      if (error.code === "auth/weak-password") msg = "Senha muito fraca.";
-      
-      showToast(msg, "error");
-      registerBtn.textContent = originalText;
-      registerBtn.disabled = false;
+      window.location.href = "portal.html";
+    } catch (err) {
+      console.error(err);
+      showToast("Erro no login. Verifique os dados.", "error");
+      loginBtn.textContent = "Entrar";
     }
   });
-} else {
-  console.error("Botão 'registerBtn' não encontrado no HTML!");
 }
 
-// --- 5. INTERFACE (MODAL & BOTÕES DE TIME) ---
-
-// Abrir Modal
-const showRegister = document.getElementById("showRegister");
-if (showRegister) {
-  showRegister.addEventListener("click", (e) => {
+// === CADASTRO ===
+const regBtn = document.getElementById("registerBtn");
+if (regBtn) {
+  regBtn.addEventListener("click", async (e) => {
     e.preventDefault();
-    const modal = document.getElementById("registerModal");
-    if (modal) modal.style.display = "flex";
-  });
-}
+    const nome = document.getElementById("nameRegister").value;
+    const email = document.getElementById("emailRegister").value;
+    const pass = document.getElementById("passwordRegister").value;
+    const grupo = document.getElementById("teamRegister").value;
 
-// Fechar Modal
-const closeModal = document.getElementById("closeModal");
-if (closeModal) {
-  closeModal.addEventListener("click", () => {
-    const modal = document.getElementById("registerModal");
-    if (modal) modal.style.display = "none";
-  });
-}
+    if (!nome || !email || !pass || !grupo) {
+      return showToast("Preencha tudo e escolha um grupo!", "error");
+    }
 
-// Botões de Seleção de Time
-const teamButtons = document.querySelectorAll(".team-btn");
-teamButtons.forEach(btn => {
-  btn.addEventListener("click", (e) => {
-    e.preventDefault(); // Impede comportamento estranho de botão
-    
-    // Remove classe active de todos
-    teamButtons.forEach(b => b.classList.remove("active"));
-    
-    // Adiciona ao clicado
-    btn.classList.add("active");
-    
-    // Atualiza input oculto
-    const val = btn.getAttribute("data-value");
-    const inputHidden = document.getElementById("teamRegister");
-    if (inputHidden) {
-        inputHidden.value = val;
-        console.log("Time selecionado:", val);
+    regBtn.textContent = "Criando...";
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await setDoc(doc(db, "atletas", cred.user.uid), {
+        nome, email, grupo, criadoEm: new Date().toISOString()
+      });
+
+      localStorage.setItem("userName", nome);
+      localStorage.setItem("userGroup", grupo);
+      localStorage.setItem("userEmail", email);
+
+      showToast("Conta criada!", "success");
+      setTimeout(() => window.location.href = "portal.html", 1500);
+    } catch (err) {
+      console.error(err);
+      showToast("Erro ao criar conta: " + err.code, "error");
+      regBtn.textContent = "Cadastrar";
     }
   });
+}
+
+// Botões de Grupo
+document.querySelectorAll(".team-btn").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    document.querySelectorAll(".team-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("teamRegister").value = btn.dataset.value;
+  });
+});
+
+// Modais
+document.getElementById("showRegister")?.addEventListener("click", () => {
+  document.getElementById("registerModal").style.display = "flex";
+});
+document.getElementById("closeModal")?.addEventListener("click", () => {
+  document.getElementById("registerModal").style.display = "none";
 });
