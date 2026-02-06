@@ -6,7 +6,7 @@ import {
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut 
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-// --- SUA CONFIGURAÇÃO (Não altere as chaves se estiverem funcionando) ---
+// --- SUA CONFIGURAÇÃO ---
 const firebaseConfig = {
   apiKey: "AIzaSyC2l8LU3vYfQjTly8JSa658mfIlVk2Dw8E",
   authDomain: "inovacao-emr.firebaseapp.com",
@@ -23,7 +23,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// 3. Exporta TUDO (Isso é o que faltava!)
+// 3. Exporta TUDO (Incluindo deleteDoc que faltava)
 export { 
   app, db, auth, 
   collection, getDocs, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc,
