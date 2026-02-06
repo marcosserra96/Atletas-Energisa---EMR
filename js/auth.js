@@ -1,76 +1,70 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+// Importa tudo do nosso arquivo central
 import { 
-  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword 
-} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { 
-  getFirestore, doc, setDoc, getDoc 
-} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  auth, db, doc, setDoc, getDoc, 
+  signInWithEmailAndPassword, createUserWithEmailAndPassword 
+} from "./firebase.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyC2l8LU3vYfQjTly8JSa658mfIlVk2Dw8E",
-  authDomain: "inovacao-emr.firebaseapp.com",
-  projectId: "inovacao-emr",
-  storageBucket: "inovacao-emr.firebasestorage.app",
-  messagingSenderId: "1075399271811",
-  appId: "1:1075399271811:web:f532f1d6fa2b21c53c2ff3"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Toast
-function showToast(msg, type = "info") {
+// --- TOAST (Aviso Visual) ---
+function showToast(message, type = "info") {
   const container = document.getElementById("toastContainer");
-  if(!container) return;
-  const t = document.createElement("div");
-  t.className = `toast ${type}`;
-  t.textContent = msg;
-  t.style.zIndex = "9999";
-  container.appendChild(t);
-  setTimeout(() => t.remove(), 4000);
+  if (!container) return;
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  toast.style.zIndex = "10000";
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
 }
 
-// === LOGIN ===
+// --- LOGIN ---
 const loginBtn = document.getElementById("loginBtn");
 if (loginBtn) {
   loginBtn.addEventListener("click", async (e) => {
     e.preventDefault();
-    const email = document.getElementById("email").value;
-    const pass = document.getElementById("password").value;
+    const email = document.getElementById("email").value.trim();
+    const pass = document.getElementById("password").value.trim();
 
     if (!email || !pass) return showToast("Preencha e-mail e senha", "error");
 
     loginBtn.textContent = "Entrando...";
+    
     try {
-      const cred = await signInWithEmailAndPassword(auth, email, pass);
-      const snap = await getDoc(doc(db, "atletas", cred.user.uid));
+      const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+      const user = userCredential.user;
+
+      // Busca dados no Banco
+      const docRef = doc(db, "atletas", user.uid);
+      const docSnap = await getDoc(docRef);
       
       let nome = "Usuário";
       let grupo = "atleta";
-      
-      if (snap.exists()) {
-        nome = snap.data().nome;
-        grupo = snap.data().grupo;
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        nome = data.nome || nome;
+        grupo = data.grupo || grupo;
       }
 
+      // Salva no Navegador
       localStorage.setItem("userName", nome);
       localStorage.setItem("userGroup", grupo);
-      localStorage.setItem("userEmail", email);
+      localStorage.setItem("userEmail", user.email);
 
-      window.location.href = "portal.html";
-    } catch (err) {
-      console.error(err);
-      showToast("Erro no login. Verifique os dados.", "error");
+      showToast("Sucesso! Redirecionando...", "success");
+      setTimeout(() => window.location.href = "portal.html", 1000);
+
+    } catch (error) {
+      console.error(error);
+      showToast("Erro ao entrar. Verifique seus dados.", "error");
       loginBtn.textContent = "Entrar";
     }
   });
 }
 
-// === CADASTRO ===
-const regBtn = document.getElementById("registerBtn");
-if (regBtn) {
-  regBtn.addEventListener("click", async (e) => {
+// --- CADASTRO ---
+const registerBtn = document.getElementById("registerBtn");
+if (registerBtn) {
+  registerBtn.addEventListener("click", async (e) => {
     e.preventDefault();
     const nome = document.getElementById("nameRegister").value;
     const email = document.getElementById("emailRegister").value;
@@ -81,9 +75,11 @@ if (regBtn) {
       return showToast("Preencha tudo e escolha um grupo!", "error");
     }
 
-    regBtn.textContent = "Criando...";
+    registerBtn.textContent = "Criando...";
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      
+      // Salva no Banco
       await setDoc(doc(db, "atletas", cred.user.uid), {
         nome, email, grupo, criadoEm: new Date().toISOString()
       });
@@ -96,13 +92,13 @@ if (regBtn) {
       setTimeout(() => window.location.href = "portal.html", 1500);
     } catch (err) {
       console.error(err);
-      showToast("Erro ao criar conta: " + err.code, "error");
-      regBtn.textContent = "Cadastrar";
+      showToast("Erro ao cadastrar.", "error");
+      registerBtn.textContent = "Cadastrar";
     }
   });
 }
 
-// Botões de Grupo
+// Lógica Visual (Modais e Botões de Grupo)
 document.querySelectorAll(".team-btn").forEach(btn => {
   btn.addEventListener("click", (e) => {
     e.preventDefault();
@@ -112,7 +108,6 @@ document.querySelectorAll(".team-btn").forEach(btn => {
   });
 });
 
-// Modais
 document.getElementById("showRegister")?.addEventListener("click", () => {
   document.getElementById("registerModal").style.display = "flex";
 });
