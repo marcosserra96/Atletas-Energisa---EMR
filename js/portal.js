@@ -3,211 +3,155 @@ import {
   collection, getDocs, doc, setDoc, getDoc
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// --- VARIÁVEIS GLOBAIS DE ESTADO ---
+// --- VARIÁVEIS ---
+const userName = localStorage.getItem("userName") || "Atleta";
 const userEmail = localStorage.getItem("userEmail") || "";
-const userName = localStorage.getItem("userName") || "Usuário";
-// REGRA: Apenas este e-mail é admin. Todos os outros (incluindo 'comite') são visualizadores.
+const userGroup = localStorage.getItem("userGroup") || "atleta";
 const ADMIN_EMAIL = "marcospauloserra@outlook.com.br";
+
+// É admin se o email bater
 const isAdmin = userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
-// =====================================================
-// 🚀 INICIALIZAÇÃO
-// =====================================================
+// --- INICIALIZAÇÃO ---
 window.addEventListener("DOMContentLoaded", () => {
-  // 1. Configurar Interface Base
-  configurarTopo();
-  
-  // 2. Aplicar Permissões (Esconde/Mostra coisas)
-  aplicarPermissoes();
-
-  // 3. Ativar Navegação (Menu)
-  inicializarNavegacao();
-
-  // 4. Carregar Dados Iniciais
-  carregarDashboard();
-
-  // 5. Configurar Botões de Ação (Sair, Salvar, etc)
-  configurarBotoesGlobais();
-
-  // 6. Recriar ícones
+  setupUI();
+  setupNavigation();
+  loadDashboard();
   lucide.createIcons();
+
+  // Botão Sair
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    localStorage.clear();
+    window.location.href = "index.html";
+  });
+
+  // Tema Escuro
+  const themeToggle = document.getElementById("theme-toggle");
+  themeToggle.addEventListener("click", () => {
+    const body = document.body;
+    const isDark = body.getAttribute("data-theme") === "dark";
+    body.setAttribute("data-theme", isDark ? "light" : "dark");
+    themeToggle.innerHTML = isDark ? '<i data-lucide="moon"></i>' : '<i data-lucide="sun"></i>';
+    lucide.createIcons();
+  });
 });
 
-// =====================================================
-// 🔐 CONTROLE DE ACESSO
-// =====================================================
-function aplicarPermissoes() {
-  // Se NÃO for o admin específico, remove elementos de gestão
-  if (!isAdmin) {
-    document.querySelectorAll(".admin-only").forEach(el => {
-      el.remove(); // Remove do DOM para evitar cliques acidentais
-    });
-    
-    // Redireciona se estiver numa aba proibida (ex: atualizou a página na aba errada)
-    const secaoAtual = document.querySelector("section.active-section");
-    if (secaoAtual && (secaoAtual.id === "atletas" || secaoAtual.id === "criterios")) {
-      navegarPara("inicio");
-    }
-  } else {
-    // Se FOR admin, carrega configurações sensíveis
-    carregarConfigStrava();
-  }
-}
+// --- UI & PERMISSÕES ---
+function setupUI() {
+  // Topo
+  const nomePrimeiro = userName.split(" ")[0];
+  const titulo = document.querySelector(".portal-nome");
+  if(titulo) titulo.textContent = `Olá, ${nomePrimeiro}`;
 
-function configurarTopo() {
-  document.getElementById("userName").textContent = userName;
   const badge = document.getElementById("userGroupBadge");
-  if (badge) {
-    badge.textContent = isAdmin ? "Administrador" : "Atleta";
-    badge.style.background = isAdmin ? "#e63946" : "rgba(255,255,255,0.2)"; // Vermelho para Admin
+  if(badge) {
+    badge.textContent = isAdmin ? "Administrador" : userGroup.toUpperCase();
+    if(isAdmin) badge.style.background = "#e63946"; // Vermelho
+  }
+
+  // Esconde elementos Admin se não for o Marcos
+  if (!isAdmin) {
+    document.querySelectorAll(".admin-only").forEach(el => el.remove());
+  } else {
+    // Se for admin, carrega configs
+    loadAdminConfigs();
   }
 }
 
-// =====================================================
-// 🧭 NAVEGAÇÃO
-// =====================================================
-function inicializarNavegacao() {
-  const menuItems = document.querySelectorAll(".menu-item");
-  
-  menuItems.forEach(item => {
-    item.addEventListener("click", () => {
-      const targetId = item.getAttribute("data-section");
-      navegarPara(targetId);
-    });
-  });
-}
-
-function navegarPara(secaoId) {
-  // 1. Atualiza Menu
-  document.querySelectorAll(".menu-item").forEach(i => i.classList.remove("active"));
-  const menuItem = document.querySelector(`.menu-item[data-section="${secaoId}"]`);
-  if (menuItem) menuItem.classList.add("active");
-
-  // 2. Atualiza Seção Principal
-  document.querySelectorAll("main section").forEach(s => {
-    s.classList.remove("active-section");
-    s.style.display = "none"; // Garante que suma
-  });
-  
-  const secaoAlvo = document.getElementById(secaoId);
-  if (secaoAlvo) {
-    secaoAlvo.style.display = "block";
-    // Pequeno delay para animação CSS funcionar (se houver fade-in)
-    setTimeout(() => secaoAlvo.classList.add("active-section"), 10);
-  }
-
-  // 3. Ícones precisam ser recarregados em algumas trocas
-  lucide.createIcons();
-}
-
-// =====================================================
-// 📊 DASHBOARD
-// =====================================================
-async function carregarDashboard() {
+// --- DASHBOARD ---
+async function loadDashboard() {
   const container = document.getElementById("dashboardCards");
   const titulo = document.getElementById("tituloDashboard");
   
-  if (!container) return;
-
-  if (isAdmin) {
-    // --- PAINEL DO ADMINISTRADOR ---
-    titulo.textContent = "Painel de Controle";
-    
-    // Buscando contagens reais (Exemplo simplificado)
+  if(isAdmin) {
+    titulo.textContent = "Visão Geral (Admin)";
     try {
-      const usersSnap = await getDocs(collection(db, "atletas"));
-      const eventsSnap = await getDocs(collection(db, "eventos"));
+      const users = await getDocs(collection(db, "atletas"));
+      const events = await getDocs(collection(db, "eventos"));
       
       container.innerHTML = `
         <div class="card">
           <i data-lucide="users"></i>
-          <h3>Atletas Cadastrados</h3>
-          <p>${usersSnap.size}</p>
+          <h3>Atletas</h3>
+          <p>${users.size}</p>
         </div>
         <div class="card">
           <i data-lucide="calendar"></i>
-          <h3>Eventos Criados</h3>
-          <p>${eventsSnap.size}</p>
+          <h3>Eventos</h3>
+          <p>${events.size}</p>
         </div>
         <div class="card">
-           <i data-lucide="settings"></i>
-           <h3>Configuração</h3>
-           <p style="font-size:1rem">API Strava</p>
+          <i data-lucide="target"></i>
+          <h3>Metas</h3>
+          <p>85%</p>
         </div>
       `;
-    } catch (e) {
-      container.innerHTML = "<p>Erro ao carregar dados.</p>";
-    }
-
+    } catch(e) { container.innerHTML = "<p>Erro ao carregar dados.</p>"; }
   } else {
-    // --- PAINEL DO ATLETA ---
-    titulo.textContent = `Olá, ${userName.split(" ")[0]}!`;
+    titulo.textContent = "Seu Desempenho";
     container.innerHTML = `
       <div class="card">
-        <i data-lucide="trophy" style="color:#f37021"></i>
-        <h3>Minha Pontuação</h3>
-        <p style="color:#f37021">0</p>
+        <i data-lucide="trophy" style="color:var(--accent)"></i>
+        <h3>Pontos</h3>
+        <p style="color:var(--accent)">1.250</p>
       </div>
       <div class="card">
         <i data-lucide="activity"></i>
         <h3>Atividades</h3>
-        <p>0</p>
+        <p>12</p>
+      </div>
+      <div class="card">
+        <i data-lucide="calendar-check"></i>
+        <h3>Presença</h3>
+        <p>100%</p>
       </div>
     `;
   }
   lucide.createIcons();
 }
 
-// =====================================================
-// ⚙️ CONFIGURAÇÕES & BOTÕES
-// =====================================================
-function configurarBotoesGlobais() {
-  // LOGOUT
-  const btnSair = document.getElementById("logoutBtn");
-  if (btnSair) {
-    btnSair.addEventListener("click", () => {
-      localStorage.clear();
-      window.location.href = "index.html";
-    });
-  }
+// --- NAVEGAÇÃO ---
+function setupNavigation() {
+  const menus = document.querySelectorAll(".menu-item");
+  menus.forEach(menu => {
+    menu.addEventListener("click", () => {
+      // Menu ativo
+      menus.forEach(m => m.classList.remove("active"));
+      menu.classList.add("active");
 
-  // SALVAR STRAVA (Só funciona se o elemento existir, ou seja, se for Admin)
-  const btnSalvarStrava = document.getElementById("btnSalvarConfigStrava");
-  if (btnSalvarStrava) {
-    btnSalvarStrava.addEventListener("click", async () => {
-      const clientId = document.getElementById("stravaClientId").value;
-      const clientSecret = document.getElementById("stravaClientSecret").value;
-
-      if (!clientId || !clientSecret) return alert("Preencha os campos!");
-
-      await setDoc(doc(db, "config_sistema", "strava"), {
-        client_id: clientId,
-        client_secret: clientSecret
+      // Seção ativa
+      const target = menu.dataset.section;
+      document.querySelectorAll("main section").forEach(s => {
+        s.classList.remove("active-section");
+        if(s.id === target) s.classList.add("active-section");
       });
-      alert("Configurações salvas!");
+      lucide.createIcons();
     });
-  }
-  
-  // CONECTAR STRAVA (Atleta)
-  const btnConnect = document.getElementById("btnConnectStrava");
-  if (btnConnect) {
-    btnConnect.addEventListener("click", () => {
-      alert("Redirecionando para Strava... (Implementar lógica de redirecionamento)");
-    });
-  }
+  });
 }
 
-async function carregarConfigStrava() {
+// --- STRAVA (ADMIN) ---
+async function loadAdminConfigs() {
   try {
     const docSnap = await getDoc(doc(db, "config_sistema", "strava"));
     if (docSnap.exists()) {
-      const data = docSnap.data();
-      const inputId = document.getElementById("stravaClientId");
-      const inputSecret = document.getElementById("stravaClientSecret");
-      if (inputId) inputId.value = data.client_id || "";
-      if (inputSecret) inputSecret.value = data.client_secret || "";
+      document.getElementById("stravaClientId").value = docSnap.data().client_id || "";
     }
-  } catch (e) {
-    console.log("Erro ao carregar configs:", e);
-  }
+    
+    document.getElementById("btnSalvarConfigStrava").addEventListener("click", async () => {
+      const id = document.getElementById("stravaClientId").value;
+      const secret = document.getElementById("stravaClientSecret").value;
+      await setDoc(doc(db, "config_sistema", "strava"), { client_id: id, client_secret: secret });
+      alert("Salvo com sucesso!");
+    });
+  } catch(e) { console.log(e); }
+}
+
+// --- STRAVA (USER) ---
+const btnConnect = document.getElementById("btnConnectStrava");
+if(btnConnect) {
+  btnConnect.addEventListener("click", () => {
+    alert("Redirecionando para login no Strava...");
+    // Aqui virá a lógica do OAuth
+  });
 }
