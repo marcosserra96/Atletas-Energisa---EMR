@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Portal Energisa</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest"></script>
+  
   <link rel="stylesheet" href="css/portal.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -14,12 +16,14 @@
   <header class="topbar">
     <div class="left">
       <img src="assets/logo-energisa-branca.svg" alt="Energisa" class="logo" />
-      <span class="portal-nome">Portal Energisa</span>
+      <span class="portal-nome">Portal Atletas</span>
     </div>
     <div class="right">
-      <span id="userName">Carregando...</span>
-      <span id="userGroupBadge" style="font-size:0.75rem; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;"></span>
-      <button id="logoutBtn" class="btn-primario">
+      <span id="userGroupBadge">Carregando...</span>
+      <button id="theme-toggle" class="btn-topo" title="Tema">
+        <i data-lucide="moon"></i>
+      </button>
+      <button id="logoutBtn" class="btn-topo">
         <i data-lucide="log-out"></i> Sair
       </button>
     </div>
@@ -27,7 +31,7 @@
 
   <nav class="menu-flutuante">
     <div class="menu-item active" data-section="inicio">
-      <i data-lucide="layout-dashboard"></i><span>Início</span>
+      <i data-lucide="layout-dashboard"></i><span>Visão Geral</span>
     </div>
     
     <div class="menu-item admin-only" data-section="atletas">
@@ -43,72 +47,106 @@
     </div>
     
     <div class="menu-item" data-section="config">
-      <i data-lucide="settings"></i><span>Configurações</span>
+      <i data-lucide="settings"></i><span>Config</span>
     </div>
   </nav>
 
   <main>
     <section id="inicio" class="active-section">
-      <h2 id="tituloDashboard">Visão Geral</h2>
+      <div class="header-acao">
+        <h2 id="tituloDashboard">Olá, Atleta!</h2>
+      </div>
+      
       <div class="cards" id="dashboardCards">
-        </div>
+        <p>Carregando dados...</p>
+      </div>
+
+      <div class="config-card" style="margin-top: 30px;">
+        <h3>Evolução Mensal</h3>
+        <canvas id="graficoParticipacao" style="max-height: 300px;"></canvas>
+      </div>
     </section>
 
     <section id="atletas">
       <div class="header-acao">
-        <h2>Gestão de Atletas</h2>
+        <h2>Gestão de Equipe</h2>
+        <button class="btn-primario"><i data-lucide="user-plus"></i> Novo Atleta</button>
       </div>
-      <table class="tabela-simples">
-        <thead>
-          <tr><th>Nome</th><th>Grupo</th><th>Ações</th></tr>
-        </thead>
-        <tbody id="listaAtletas">
-          <tr><td colspan="3">Carregando...</td></tr>
-        </tbody>
-      </table>
+      <div class="tabela-container">
+        <table class="tabela-simples">
+          <thead>
+            <tr><th>Nome</th><th>Grupo</th><th>Status</th><th>Ações</th></tr>
+          </thead>
+          <tbody id="listaAtletas">
+            <tr><td colspan="4">Carregando lista...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <section id="eventos">
       <div class="header-acao">
-        <h2>Eventos</h2>
-        <button id="novoEventoBtn" class="btn-acao admin-only">
+        <h2>Calendário</h2>
+        <button id="novoEventoBtn" class="btn-primario admin-only">
           <i data-lucide="plus"></i> Criar Evento
         </button>
       </div>
-      <div id="listaEventos">
-        <p>Nenhum evento próximo.</p>
+      <div id="listaEventos" class="cards">
+        <div class="card">
+          <p style="font-size:1rem; font-weight:400;">Nenhum evento próximo.</p>
+        </div>
       </div>
     </section>
 
     <section id="criterios">
-      <h2>Critérios de Pontuação</h2>
-      <p>Configure aqui como os pontos são distribuídos.</p>
+      <div class="header-acao">
+        <h2>Critérios de Pontuação</h2>
+      </div>
+      <div class="config-card">
+        <p>Configure aqui as regras de pontuação da temporada.</p>
+        <button class="btn-acao">Editar Regras</button>
+      </div>
     </section>
 
     <section id="config">
-      <h2>Configurações</h2>
-      
-      <div class="cards" style="grid-template-columns: 1fr; margin-bottom: 20px;">
-        <div class="card" style="text-align:left; border-left: 4px solid #fc4c02;">
-          <h3><i data-lucide="activity"></i> Strava</h3>
-          <p>Conecte sua conta para sincronizar atividades.</p>
-          <button id="btnConnectStrava" class="btn-primario" style="background:#fc4c02; border:none; margin-top:10px;">
+      <div class="header-acao"><h2>Configurações</h2></div>
+
+      <div class="config-card" style="border-left: 4px solid #fc4c02;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
+          <div>
+            <h3 style="color:#fc4c02; display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+              <i data-lucide="activity"></i> Integração Strava
+            </h3>
+            <p style="font-size:0.9rem; color:var(--text-light); margin:0;">Sincronize seus pedais e corridas automaticamente.</p>
+          </div>
+          <button id="btnConnectStrava" class="btn-primario" style="background:#fc4c02;">
             Conectar Agora
           </button>
         </div>
       </div>
 
-      <div class="cards admin-only" style="grid-template-columns: 1fr;">
-        <div class="card" style="text-align:left; border-left: 4px solid #009bc1;">
-          <h3>⚙️ API Strava (Admin)</h3>
-          <label style="display:block; margin-top:10px;">Client ID</label>
-          <input type="text" id="stravaClientId" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:6px;">
-          
-          <label style="display:block;">Client Secret</label>
-          <input type="password" id="stravaClientSecret" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:6px;">
-          
-          <button id="btnSalvarConfigStrava" class="btn-primario">Salvar Credenciais</button>
+      <div class="config-card admin-only">
+        <h3>⚙️ Configurar API Strava (Admin)</h3>
+        <p style="margin-bottom:15px; font-size:0.9rem;">Insira as chaves de desenvolvedor do Strava.</p>
+        
+        <div style="display:grid; gap:15px;">
+          <div>
+            <label>Client ID</label>
+            <input type="text" id="stravaClientId" placeholder="Ex: 123456" />
+          </div>
+          <div>
+            <label>Client Secret</label>
+            <input type="password" id="stravaClientSecret" placeholder="••••••••••••" />
+          </div>
+          <button id="btnSalvarConfigStrava" class="btn-primario">
+            <i data-lucide="save"></i> Salvar Credenciais
+          </button>
         </div>
+      </div>
+
+      <div class="config-card">
+        <h3>Minha Conta</h3>
+        <button class="btn-acao"><i data-lucide="lock"></i> Alterar Senha</button>
       </div>
     </section>
   </main>
